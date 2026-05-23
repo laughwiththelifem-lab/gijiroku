@@ -1,5 +1,3 @@
-$ cat /Users/Tomo/Desktop/gijiroku/index.html
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -17,7 +15,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:none;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
 .btn-interval{background:#2D2D44;color:#aaa;border:1px solid #3D3D5C}
 .btn-interval select{background:transparent;color:#aaa;border:none;font-size:13px;cursor:pointer;outline:none}
-.btn-file{background:#2D2D44;color:#C8D8F0;border:1px solid #3D3D5C}
+.btn-file{background:#2D2D44;color:#C8D8F0;border:1px solid #3D3D5C;cursor:pointer}
 .btn-ai{background:#F0A500;color:#fff}
 .btn-ai:disabled{background:#666;cursor:not-allowed;opacity:0.6}
 .btn-rec{background:#E74C3C;color:#fff}
@@ -67,7 +65,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
     <span class="btn btn-interval">
       🔄<select id="sel-interval"><option value="60">1分</option><option value="120">2分</option><option value="300">5分</option></select>
     </span>
-    <button class="btn btn-file" id="btn-file">📂 ファイル読込</button>
+    <label class="btn btn-file" for="file-input">📂 ファイル読込</label>
     <input type="file" id="file-input" accept=".txt" style="display:none">
     <button class="btn btn-ai" id="btn-ai" disabled>✨ AI整形</button>
     <button class="btn btn-rec" id="btn-rec">🎤 録音開始</button>
@@ -114,7 +112,6 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 var lines=[], isRec=false, recog=null, updateCount=0, cdTimer=null, cdSec=0, lastData=null;
 var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 
-// APIキー入力
 document.getElementById('api-key').addEventListener('input',function(){
   checkBtns();
 });
@@ -125,24 +122,14 @@ function checkBtns(){
   document.getElementById('btn-word').disabled=!lastData;
 }
 
-// ファイル読込ボタン
-document.getElementById('btn-file').addEventListener('click',function(){
-  document.getElementById('file-input').click();
-});
-
-// ファイル選択
 document.getElementById('file-input').addEventListener('change',function(e){
   var file=e.target.files[0];
   var inp=this;
   if(!file)return;
-
-  // UTF-8で試す
   var r1=new FileReader();
   r1.onload=function(ev){
     var text=ev.target.result;
-    // 文字化けチェック
     if(text.indexOf('\ufffd')>=0){
-      // Shift-JISで再試行
       var r2=new FileReader();
       r2.onload=function(ev2){
         importText(ev2.target.result, file.name);
@@ -158,15 +145,10 @@ document.getElementById('file-input').addEventListener('change',function(e){
 });
 
 function importText(text, filename){
-  if(!text||!text.trim()){
-    alert('ファイルが空です');
-    return;
-  }
+  if(!text||!text.trim()){alert('ファイルが空です');return;}
   var box=document.getElementById('transcript');
   if(box.querySelector('.ph'))box.innerHTML='';
-  
   var sents=text.split(/[\n。]+/).map(function(s){return s.trim();}).filter(function(s){return s.length>0;});
-  
   sents.forEach(function(s){
     lines.push(s);
     var d=document.createElement('div');
@@ -179,7 +161,6 @@ function importText(text, filename){
   checkBtns();
 }
 
-// 録音
 document.getElementById('btn-rec').addEventListener('click',function(){
   if(!SR){alert('ChromeまたはEdgeをお使いください');return;}
   isRec?stopRec():startRec();
@@ -191,7 +172,6 @@ function startRec(){
   recog.continuous=true;
   recog.interimResults=true;
   var iDiv=null;
-
   recog.onstart=function(){
     isRec=true;
     document.getElementById('btn-rec').textContent='⏹ 録音停止';
@@ -202,7 +182,6 @@ function startRec(){
     if(box.querySelector('.ph'))box.innerHTML='';
     startCD();
   };
-
   recog.onresult=function(e){
     var box=document.getElementById('transcript');
     var interim='';
@@ -221,7 +200,6 @@ function startRec(){
       iDiv.textContent=interim+'…';box.scrollTop=box.scrollHeight;
     }
   };
-
   recog.onerror=function(e){
     if(e.error==='not-allowed'){
       alert('マイクへのアクセスが拒否されました。ブラウザのアドレスバー左のアイコンからマイクを許可してください。');
@@ -271,7 +249,6 @@ function clearAll(){
   checkBtns();
 }
 
-// AI整形
 document.getElementById('btn-ai').addEventListener('click',function(){
   formatMinutes();
 });
@@ -280,14 +257,11 @@ async function formatMinutes(){
   if(lines.length===0)return;
   var apiKey=document.getElementById('api-key').value.trim();
   if(!apiKey){alert('APIキーを入力してください');return;}
-
   var raw=lines.join('。');
   var prompt='あなたは会議議事録の整形専門アシスタントです。以下の文字起こしをもとに、JSONのみを出力してください。前置き・説明・コードブロック記号は一切不要です。\n\n文字起こし：'+raw+'\n\nJSON形式：\n{"title":"会議名（不明なら会議）","date":"日時（不明なら空）","place":"場所（不明なら空）","members":"出席者（不明なら空）","goal":"本日のゴール（不明なら空）","agendas":[{"name":"議題名","points":"議論の要点（簡潔に）","decisions":"決定事項（なければ空）","pending":"保留事項（なければ空）"}],"actions":[{"who":"担当者（不明なら不明）","what":"やること","when":"期限（不明なら不明）"}],"next_meeting":"次回予定（不明なら空）","notes":"特記事項（なければ空）"}\n\nルール：会話文そのままは禁止。要点を簡潔にまとめる。不明は不明と記載。JSONのみ出力。';
-
   var minBox=document.getElementById('minutes');
   minBox.innerHTML='<div class="loading"><div class="spin"></div>AIが議事録を整形中...</div>';
   document.getElementById('btn-ai').disabled=true;
-
   try{
     var res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -354,7 +328,6 @@ function renderMinutes(d){
   document.getElementById('minutes').innerHTML=h;
 }
 
-// Word出力
 document.getElementById('btn-word').addEventListener('click',function(){
   if(!lastData){alert('先にAI整形してください');return;}
   if(typeof docx==='undefined'){alert('ライブラリ読み込み中です。少し待ってから再度お試しください。');return;}
