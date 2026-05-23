@@ -1,3 +1,5 @@
+$ cat /Users/Tomo/Desktop/gijiroku/index.html
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -131,8 +133,9 @@ document.getElementById('btn-file').addEventListener('click',function(){
 // ファイル選択
 document.getElementById('file-input').addEventListener('change',function(e){
   var file=e.target.files[0];
+  var inp=this;
   if(!file)return;
-  
+
   // UTF-8で試す
   var r1=new FileReader();
   r1.onload=function(ev){
@@ -143,14 +146,15 @@ document.getElementById('file-input').addEventListener('change',function(e){
       var r2=new FileReader();
       r2.onload=function(ev2){
         importText(ev2.target.result, file.name);
+        inp.value='';
       };
       r2.readAsText(file,'Shift_JIS');
     } else {
       importText(text, file.name);
+      inp.value='';
     }
   };
   r1.readAsText(file,'UTF-8');
-  this.value='';
 });
 
 function importText(text, filename){
@@ -219,7 +223,13 @@ function startRec(){
   };
 
   recog.onerror=function(e){
-    if(e.error!=='no-speech')document.getElementById('st-left').textContent='エラー: '+e.error;
+    if(e.error==='not-allowed'){
+      alert('マイクへのアクセスが拒否されました。ブラウザのアドレスバー左のアイコンからマイクを許可してください。');
+      stopRec();
+    } else if(e.error!=='no-speech'){
+      document.getElementById('st-left').textContent='エラー: '+e.error;
+      stopRec();
+    }
   };
   recog.onend=function(){if(isRec)recog.start();};
   recog.start();
