@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>gijiroku - AI議事録アプリ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;background:#F5F5F5;color:#333;height:100vh;display:flex;flex-direction:column}
+.topbar{background:#1A1A2E;color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.logo{font-size:20px;font-weight:700;color:#7EB8F7;letter-spacing:1px}
+.logo span{color:#fff;font-weight:300;font-size:13px;margin-left:4px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-interval{background:#2D2D44;color:#aaa;border:1px solid #3D3D5C}
+.btn-interval select{background:transparent;color:#aaa;border:none;font-size:13px;cursor:pointer;outline:none}
+.btn-file{background:#2D2D44;color:#C8D8F0;border:1px solid #3D3D5C}
+.btn-file:hover{background:#3D3D5C}
+.btn-ai{background:#F0A500;color:#fff}
+.btn-ai:hover{background:#D4920A}
+.btn-ai:disabled{background:#888;cursor:not-allowed}
+.btn-rec{background:#E74C3C;color:#fff}
+.btn-rec:hover{background:#C0392B}
+.btn-rec.recording{background:#27AE60}
+.btn-rec.recording:hover{background:#219A52}
+.btn-word{background:#2E75B6;color:#fff}
+.btn-word:hover{background:#1A5A9A}
+.btn-word:disabled{background:#888;cursor:not-allowed}
+.main{display:grid;grid-template-columns:1fr 1fr;gap:0;flex:1;overflow:hidden}
+.panel{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid #DDD}
+.panel:last-child{border-right:none}
+.panel-header{padding:12px 16px;background:#fff;border-bottom:1px solid #E0E0E0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.panel-title{font-size:13px;font-weight:600;color:#555;display:flex;align-items:center;gap:6px}
+.panel-badge{font-size:11px;padding:2px 8px;border-radius:10px;background:#E8F0FE;color:#1A73E8}
+.panel-content{flex:1;overflow-y:auto;padding:16px;background:#FAFAFA}
+.transcript-line{font-size:13px;line-height:1.8;color:#333;padding:4px 0;border-bottom:1px solid #F0F0F0}
+.transcript-line:last-child{border-bottom:none}
+.transcript-line.interim{color:#AAA;font-style:italic}
+.placeholder{color:#BBB;font-size:13px;text-align:center;padding:40px 20px;line-height:1.8}
+.minutes-section{margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #E0E0E0}
+.minutes-section-header{padding:10px 14px;font-size:13px;font-weight:600;color:#fff}
+.minutes-section-header.blue{background:#2E75B6}
+.minutes-section-header.green{background:#375623}
+.minutes-section-header.orange{background:#C55A11}
+.minutes-section-header.gray{background:#595959}
+.minutes-section-body{padding:12px 14px;background:#fff;font-size:13px;line-height:1.8}
+.minutes-section-body .item{padding:3px 0}
+.minutes-section-body .item.decision{color:#375623;font-weight:500}
+.minutes-section-body .item.pending{color:#843C0C}
+.minutes-section-body .item.action{padding:6px 0;border-bottom:1px solid #F5F5F5}
+.minutes-section-body .item.action:last-child{border-bottom:none}
+.minutes-title{font-size:16px;font-weight:700;color:#1A1A2E;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #2E75B6}
+.status-bar{padding:6px 16px;background:#1A1A2E;color:#888;font-size:11px;display:flex;justify-content:space-between;flex-shrink:0}
+.status-bar span.active{color:#27AE60}
+.loading{display:flex;align-items:center;gap:8px;color:#2E75B6;font-size:13px;padding:20px}
+.spinner{width:16px;height:16px;border:2px solid #B5D4F4;border-top-color:#2E75B6;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.api-bar{background:#FFF8E1;border-bottom:1px solid #FFE082;padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:12px;flex-shrink:0}
+.api-bar input{flex:1;padding:6px 10px;border:1px solid #FFE082;border-radius:6px;font-size:12px;background:#fff}
+.api-bar input:focus{outline:none;border-color:#F0A500}
+.note-area{width:100%;min-height:60px;font-size:13px;padding:8px;border:1px solid #E0E0E0;border-radius:6px;font-family:inherit;resize:vertical;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">gijiroku<span>AI議事録</span></div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-interval">
+      <span>🔄 更新:</span>
+      <select id="interval-select">
+        <option value="60">1分</option>
+        <option value="120">2分</option>
+        <option value="300">5分</option>
+      </select>
+    </button>
+    <button class="btn btn-file" onclick="document.getElementById('file-input').click()">📂 ファイル読込</button>
+    <input type="file" id="file-input" accept=".txt" style="display:none">
+    <button class="btn btn-ai" id="btn-ai" onclick="formatMinutes()" disabled>✨ AI整形</button>
+    <button class="btn btn-rec" id="btn-rec">🎤 録音開始</button>
+    <button class="btn btn-word" id="btn-word" onclick="downloadWord()" disabled>📄 Word出力</button>
+  </div>
+</div>
+
+<div class="api-bar">
+  <span>🔑 Anthropic APIキー：</span>
+  <input type="password" id="api-key" placeholder="sk-ant-... （入力するとAI整形が使えます）">
+  <span style="color:#888">取得：<a href="https://console.anthropic.com" target="_blank" style="color:#F0A500">console.anthropic.com</a></span>
+</div>
+
+<div class="main">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">🎙 文字起こし（履歴）</div>
+      <div style="display:flex;gap:6px">
+        <span class="panel-badge" id="rec-badge">待機中</span>
+        <button style="font-size:11px;padding:2px 8px;border-radius:6px;border:1px solid #DDD;background:#fff;cursor:pointer" onclick="clearTranscript()">クリア</button>
+      </div>
+    </div>
+    <div class="panel-content" id="transcript">
+      <div class="placeholder">録音を開始するか、テキストファイルを読み込むとここに文字起こしが表示されます</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">📋 最新の全体議事録</div>
+      <span class="panel-badge" id="update-count">0回更新済</span>
+    </div>
+    <div class="panel-content" id="minutes">
+      <div class="placeholder">録音または文字起こし取り込み後、「AI整形」ボタンを押すと議事録が生成されます</div>
+    </div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span id="status-left">待機中</span>
+  <span id="status-right">自動更新まで：--:--</span>
+</div>
+
+<script>
+var lines=[], isRec=false, recog=null, updateCount=0, autoTimer=null, countdown=null, cdSec=0;
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
+// APIキー入力で整形ボタン有効化
+document.getElementById('api-key').addEventListener('input',function(){
+  var hasKey=this.value.trim().length>10;
+  var hasLines=lines.length>0;
+  document.getElementById('btn-ai').disabled=!(hasKey&&hasLines);
+});
+
+// ファイル読み込み
+document.getElementById('file-input').addEventListener('change',function(){
+  var file=this.files[0]; if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var text=e.target.result;
+    var sents=text.split(/[\n。]+/).map(function(s){return s.trim();}).filter(function(s){return s.length>0;});
+    var box=document.getElementById('transcript');
+    if(box.querySelector('.placeholder'))box.innerHTML='';
+    sents.forEach(function(s){
+      lines.push(s);
+      var d=document.createElement('div');d.className='transcript-line';d.textContent=s;box.appendChild(d);
+    });
+    box.scrollTop=box.scrollHeight;
+    checkAiBtn();
+    document.getElementById('status-left').textContent=sents.length+'行を読み込みました';
+  };
+  reader.readAsText(file,'UTF-8');
+  this.value='';
+});
+
+// 録音
+document.getElementById('btn-rec').addEventListener('click',function(){
+  if(!SR){alert('ChromeまたはEdgeをお使いください');return;}
+  isRec?stopRec():startRec();
+});
+
+function startRec(){
+  recog=new SR();recog.lang='ja-JP';recog.continuous=true;recog.interimResults=true;
+  var iDiv=null;
+  recog.onstart=function(){
+    isRec=true;
+    document.getElementById('btn-rec').textContent='⏹ 録音停止';
+    document.getElementById('btn-rec').classList.add('recording');
+    document.getElementById('rec-badge').textContent='🔴 録音中';
+    document.getElementById('status-left').textContent='録音中...';
+    var box=document.getElementById('transcript');
+    if(box.querySelector('.placeholder'))box.innerHTML='';
+    startAutoTimer();
+  };
+  recog.onresult=function(e){
+    var box=document.getElementById('transcript');
+    var interim='';
+    for(var i=e.resultIndex;i<e.results.length;i++){
+      var t=e.results[i][0].transcript;
+      if(e.results[i].isFinal){
+        if(iDiv){iDiv.remove();iDiv=null;}
+        lines.push(t);
+        var d=document.createElement('div');d.className='transcript-line';d.textContent=t;box.appendChild(d);
+        box.scrollTop=box.scrollHeight;
+        checkAiBtn();
+      } else {interim=t;}
+    }
+    if(interim){
+      if(!iDiv){iDiv=document.createElement('div');iDiv.className='transcript-line interim';box.appendChild(iDiv);}
+      iDiv.textContent=interim+'…';box.scrollTop=box.scrollHeight;
+    }
+  };
+  recog.onerror=function(e){if(e.error!=='no-speech')document.getElementById('status-left').textContent='エラー: '+e.error;};
+  recog.onend=function(){if(isRec)recog.start();};
+  recog.start();
+}
+
+function stopRec(){
+  isRec=false;if(recog)recog.stop();
+  document.getElementById('btn-rec').textContent='🎤 録音開始';
+  document.getElementById('btn-rec').classList.remove('recording');
+  document.getElementById('rec-badge').textContent='停止';
+  document.getElementById('status-left').textContent='録音完了';
+  stopAutoTimer();
+}
+
+function startAutoTimer(){
+  stopAutoTimer();
+  var sec=parseInt(document.getElementById('interval-select').value);
+  cdSec=sec;
+  countdown=setInterval(function(){
+    cdSec--;
+    var m=Math.floor(cdSec/60),s=cdSec%60;
+    document.getElementById('status-right').textContent='自動更新まで：'+('0'+m).slice(-2)+':'+('0'+s).slice(-2);
+    if(cdSec<=0){
+      formatMinutes();
+      cdSec=parseInt(document.getElementById('interval-select').value);
+    }
+  },1000);
+}
+
+function stopAutoTimer(){
+  if(countdown){clearInterval(countdown);countdown=null;}
+  document.getElementById('status-right').textContent='自動更新まで：--:--';
+}
+
+function checkAiBtn(){
+  var hasKey=document.getElementById('api-key').value.trim().length>10;
+  document.getElementById('btn-ai').disabled=!(hasKey&&lines.length>0);
+}
+
+function clearTranscript(){
+  lines=[];
+  document.getElementById('transcript').innerHTML='<div class="placeholder">録音を開始するか、テキストファイルを読み込むとここに文字起こしが表示されます</div>';
+  document.getElementById('btn-ai').disabled=true;
+}
+
+async function formatMinutes(){
+  if(lines.length===0)return;
+  var apiKey=document.getElementById('api-key').value.trim();
+  if(!apiKey){alert('APIキーを入力してください');return;}
+  var raw=lines.join('。');
+  var prompt='あなたは会議議事録の整形専門アシスタントです。以下の文字起こしをもとに、JSONのみを出力してください。\n\n文字起こし：'+raw+'\n\n以下のJSON形式で出力（他のテキスト一切不可）：\n{"title":"会議名（文字起こしから判断。不明なら「会議」）","date":"日時（不明なら空）","place":"場所（不明なら空）","members":"出席者（不明なら空）","goal":"本日のゴール（不明なら空）","agendas":[{"name":"議題名","points":"議論の要点（簡潔に）","decisions":"決定事項（なければ空）","pending":"保留事項（なければ空）"}],"actions":[{"who":"担当者（不明なら不明）","what":"やること","when":"期限（不明なら不明）"}],"next_meeting":"次回予定（不明なら空）","notes":"特記事項（なければ空）"}\n\nルール：会話文をそのまま入れない。決まったこと・要点を簡潔にまとめる。不明は「不明」。JSONのみ。';
+
+  var box=document.getElementById('minutes');
+  box.innerHTML='<div class="loading"><div class="spinner"></div>AIが議事録を整形中...</div>';
+  document.getElementById('btn-ai').disabled=true;
+  document.getElementById('btn-word').disabled=true;
+
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+    });
+    if(!res.ok)throw new Error('APIエラー: '+res.status);
+    var data=await res.json();
+    var text=data.content.filter(function(c){return c.type==='text';}).map(function(c){return c.text;}).join('');
+    var m=text.match(/\{[\s\S]*\}/);
+    if(!m)throw new Error('JSON形式エラー');
+    window._lastMinutes=JSON.parse(m[0]);
+    renderMinutes(window._lastMinutes);
+    updateCount++;
+    document.getElementById('update-count').textContent=updateCount+'回更新済';
+    document.getElementById('btn-word').disabled=false;
+  }catch(e){
+    box.innerHTML='<div class="placeholder" style="color:#E74C3C">整形に失敗しました。<br><small>'+e.message+'</small></div>';
+  }
+  checkAiBtn();
+}
+
+function renderMinutes(d){
+  var h='<div class="minutes-title">📝 '+( d.title||'会議議事録')+'</div>';
+  h+='<div class="minutes-section"><div class="minutes-section-header blue">① 基本情報</div><div class="minutes-section-body">';
+  if(d.date)h+='<div class="item">📅 日時：'+d.date+'</div>';
+  if(d.place)h+='<div class="item">📍 場所：'+d.place+'</div>';
+  if(d.members)h+='<div class="item">👥 出席者：'+d.members+'</div>';
+  if(d.goal)h+='<div class="item">🎯 ゴール：'+d.goal+'</div>';
+  if(!d.date&&!d.place&&!d.members&&!d.goal)h+='<div class="item" style="color:#AAA">（情報なし）</div>';
+  h+='</div></div>';
+  if(d.agendas&&d.agendas.length>0){
+    h+='<div class="minutes-section"><div class="minutes-section-header green">② 議題ごとの要約</div><div class="minutes-section-body">';
+    d.agendas.forEach(function(a){
+      h+='<div class="item"><strong>■ '+( a.name||'')+'</strong></div>';
+      if(a.points)h+='<div class="item">議論の要点：'+a.points+'</div>';
+      if(a.decisions)h+='<div class="item decision">✅ 決定：'+a.decisions+'</div>';
+      if(a.pending)h+='<div class="item pending">△ 保留：'+a.pending+'</div>';
+    });
+    h+='</div></div>';
+  }
+  if(d.actions&&d.actions.length>0){
+    h+='<div class="minutes-section"><div class="minutes-section-header orange">③ ネクストアクション</div><div class="minutes-section-body">';
+    d.actions.forEach(function(a){
+      h+='<div class="item action">👤 <strong>'+(a.who||'不明')+'</strong> が　🎯 '+(a.what||'')+'　を　📅 <strong style="color:#C55A11">'+(a.when||'不明')+'</strong> に行う</div>';
+    });
+    h+='</div></div>';
+  }
+  h+='<div class="minutes-section"><div class="minutes-section-header gray">④ 全体備考・特記事項</div><div class="minutes-section-body">';
+  if(d.next_meeting)h+='<div class="item">次回予定：'+d.next_meeting+'</div>';
+  if(d.notes)h+='<div class="item">特記：'+d.notes+'</div>';
+  if(!d.next_meeting&&!d.notes)h+='<div class="item" style="color:#AAA">（特記事項なし）</div>';
+  h+='<textarea class="note-area" placeholder="補記・追記（Word出力に反映されます）" id="note-area"></textarea>';
+  h+='</div></div>';
+  document.getElementById('minutes').innerHTML=h;
+}
+
+function downloadWord(){
+  if(!window._lastMinutes){alert('先にAI整形してください');return;}
+  if(typeof docx==='undefined'){alert('ライブラリ読み込み中です。少し待ってから再度お試しください。');return;}
+  var D=docx,d=window._lastMinutes;
+  var W=9026;
+  var bdr=function(c){return{style:D.BorderStyle.SINGLE,size:4,color:c};};
+  var ab=function(c){return{top:bdr(c),bottom:bdr(c),left:bdr(c),right:bdr(c)};};
+  var sp=function(b,a){return{spacing:{before:b||0,after:a||80}};};
+  var mg={top:80,bottom:80,left:160,right:160};
+  var mg2={top:100,bottom:100,left:180,right:180};
+  var hdr=function(txt,fill){return new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab(fill),shading:{fill:fill,type:D.ShadingType.CLEAR},margins:mg2,children:[new D.Paragraph({children:[new D.TextRun({text:txt,bold:true,size:22,color:'FFFFFF',font:'Arial'})]})]})]}); };
+  var bodyR=function(children){return new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg2,children:children})]});};
+  var tbl=function(rows){return new D.Table({width:{size:W,type:D.WidthType.DXA},columnWidths:[W],rows:rows});};
+  var gap=function(){return new D.Paragraph(Object.assign(sp(60,60),{children:[new D.TextRun({text:'',size:16})]}));};
+  var p=function(txt,opts){return new D.Paragraph(Object.assign(sp(0,60),{children:[new D.TextRun(Object.assign({text:txt,size:20,font:'Arial'},opts||{}))]}));};
+  var metaRows=[['開催日時',d.date],['開催場所',d.place],['出席者',d.members],['本日のゴール',d.goal]].filter(function(x){return x[1];}).map(function(x){return new D.TableRow({children:[new D.TableCell({width:{size:2000,type:D.WidthType.DXA},borders:ab('DDDDDD'),shading:{fill:'EBF3FB',type:D.ShadingType.CLEAR},margins:mg,children:[new D.Paragraph({children:[new D.TextRun({text:x[0],bold:true,size:19,color:'185FA5',font:'Arial'})]}),]}),new D.TableCell({width:{size:7026,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg,children:[new D.Paragraph({children:[new D.TextRun({text:x[1]||'　',size:19,font:'Arial'})]})]})]}); });
+  if(!metaRows.length)metaRows=[new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg,children:[p('（基本情報なし）',{color:'AAAAAA'})]})]})];
+  var agendaContent=[];
+  (d.agendas||[]).forEach(function(a){
+    agendaContent.push(new D.Paragraph(Object.assign(sp(0,40),{children:[new D.TextRun({text:'■ '+(a.name||''),bold:true,size:20,font:'Arial'})]})));
+    if(a.points)agendaContent.push(p('議論の要点：'+a.points));
+    if(a.decisions)agendaContent.push(new D.Paragraph(Object.assign(sp(0,40),{children:[new D.TextRun({text:'✅ 決定事項：'+a.decisions,bold:true,size:20,color:'375623',font:'Arial'})]})));
+    if(a.pending)agendaContent.push(p('△ 保留：'+a.pending));
+    agendaContent.push(p(''));
+  });
+  if(!agendaContent.length)agendaContent.push(p('（なし）',{color:'AAAAAA'}));
+  var actionContent=[];
+  (d.actions||[]).forEach(function(a){
+    actionContent.push(new D.Paragraph(Object.assign(sp(0,80),{children:[new D.TextRun({text:'👤 ',size:20}),new D.TextRun({text:(a.who||'不明'),bold:true,size:20,font:'Arial'}),new D.TextRun({text:'  が　🎯  '+(a.what||'')+'  を　📅  ',size:20,font:'Arial'}),new D.TextRun({text:(a.when||'不明'),bold:true,size:20,color:'843C0C',font:'Arial'}),new D.TextRun({text:'  に行う',size:20,font:'Arial'})]})));
+  });
+  if(!actionContent.length)actionContent.push(p('（なし）',{color:'AAAAAA'}));
+  var noteText=document.getElementById('note-area')?document.getElementById('note-area').value:'';
+  var noteContent=[];
+  if(d.next_meeting)noteContent.push(p('次回予定：'+d.next_meeting));
+  if(d.notes)noteContent.push(p('特記事項：'+d.notes));
+  if(noteText)noteContent.push(p('補記：'+noteText));
+  if(!noteContent.length)noteContent.push(p('（なし）',{color:'AAAAAA'}));
+  var doc=new D.Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:800,right:850,bottom:800,left:850}}},children:[
+    new D.Paragraph(Object.assign(sp(0,120),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'📝  議　事　録',bold:true,size:44,color:'1A1A2E',font:'Arial'})]})),
+    new D.Paragraph(Object.assign(sp(0,160),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:d.title||'会議議事録',size:26,color:'2E75B6',font:'Arial'})]})),
+    tbl([hdr('① 基本情報','2E75B6'),new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg2,children:[new D.Table({width:{size:8626,type:D.WidthType.DXA},columnWidths:[2000,6626],rows:metaRows})]})]})]]),
+    gap(),
+    tbl([hdr('② 議題ごとの要約','375623'),bodyR(agendaContent)]),
+    gap(),
+    tbl([hdr('③ ネクストアクション（誰が・何を・いつまでに）','C55A11'),bodyR(actionContent)]),
+    gap(),
+    tbl([hdr('④ 全体備考・特記事項','595959'),bodyR(noteContent)]),
+  ]}]});
+  D.Packer.toBlob(doc).then(function(blob){
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=(d.title||'議事録')+'_議事録.docx';
+    a.click();
+  });
+}
+</script>
+</body>
+</html>
