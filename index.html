@@ -225,7 +225,7 @@ async function formatMinutes(){
   minBox.innerHTML='<div class="loading"><div class="spin"></div>AIが議事録を整形中...</div>';
   document.getElementById('btn-ai').disabled=true;
   try{
-    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key='+apiKey,{
+    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key='+apiKey,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:1500,temperature:0.3}})
