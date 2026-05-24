@@ -70,9 +70,9 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
   </div>
 </div>
 <div class="api-bar">
-  <span>🔑 Anthropic APIキー：</span>
-  <input type="password" id="api-key" placeholder="sk-ant-... を入力するとAI整形が使えます">
-  <span>取得：<a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></span>
+  <span>🔑 Gemini APIキー：</span>
+  <input type="password" id="api-key" placeholder="AIza... を入力するとAI整形が使えます（無料）">
+  <span>取得：<a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a></span>
 </div>
 <div class="main">
   <div class="panel">
@@ -225,14 +225,14 @@ async function formatMinutes(){
   minBox.innerHTML='<div class="loading"><div class="spin"></div>AIが議事録を整形中...</div>';
   document.getElementById('btn-ai').disabled=true;
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{
+    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+apiKey,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:1500,temperature:0.3}})
     });
     if(!res.ok)throw new Error('APIエラー: '+res.status);
     var data=await res.json();
-    var txt=data.content.filter(function(c){return c.type==='text';}).map(function(c){return c.text;}).join('');
+    var txt=((data.candidates||[])[0]||{content:{parts:[{text:''}]}}).content.parts.map(function(c){return c.text;}).join('');
     var m=txt.match(/\{[\s\S]*\}/);
     if(!m)throw new Error('JSON解析エラー');
     lastData=JSON.parse(m[0]);
