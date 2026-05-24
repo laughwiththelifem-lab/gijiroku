@@ -319,7 +319,7 @@ document.getElementById('btn-word').addEventListener('click',function(){
   var doc=new D.Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:800,right:850,bottom:800,left:850}}},children:[
     new D.Paragraph(Object.assign(sp(0,80),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'議  事  録',bold:true,size:44,color:'1A1A2E',font:'Arial'})]})),
     new D.Paragraph(Object.assign(sp(0,160),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:d.title||'会議議事録',size:26,color:'2E75B6',font:'Arial'})]})),
-    tbl([hdr('① 基本情報','2E75B6'),new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg2,children:[new D.Table({width:{size:8626,type:D.WidthType.DXA},columnWidths:[2000,6626],rows:metaRows})]})]})]]),
+    tbl([hdr('① 基本情報','2E75B6'),new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg2,children:[new D.Table({width:{size:8626,type:D.WidthType.DXA},columnWidths:[2000,6626],rows:metaRows})]})]})]),
     gap(),
     tbl([hdr('② 議題ごとの要約','375623'),bodyR(agendaContent)]),
     gap(),
