@@ -63,7 +63,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
   <div class="topbar-right">
     <span class="btn btn-interval">🔄<select id="sel-interval"><option value="60">1分</option><option value="120">2分</option><option value="300">5分</option></select></span>
     <label class="btn btn-file" for="file-input">📂 ファイル読込</label>
-    <input type="file" id="file-input" accept=".txt" style="display:none">
+    <input type="file" id="file-input" accept=".txt" multiple style="display:none">
     <button class="btn btn-ai" id="btn-ai" disabled>✨ AI整形</button>
     <button class="btn btn-rec" id="btn-rec">🎤 録音開始</button>
     <button class="btn btn-word" id="btn-word" disabled>📄 Word出力</button>
@@ -104,22 +104,28 @@ function checkBtns(){
   document.getElementById('btn-word').disabled=!lastData;
 }
 document.getElementById('file-input').addEventListener('change',function(e){
-  var file=e.target.files[0];
+  var files=Array.from(e.target.files);
   var inp=this;
-  if(!file)return;
-  var r1=new FileReader();
-  r1.onload=function(ev){
-    var text=ev.target.result;
-    if(text.indexOf('\ufffd')>=0){
-      var r2=new FileReader();
-      r2.onload=function(ev2){importText(ev2.target.result,file.name);inp.value='';};
-      r2.readAsText(file,'Shift_JIS');
-    } else {
-      importText(text,file.name);
-      inp.value='';
-    }
-  };
-  r1.readAsText(file,'UTF-8');
+  if(!files.length)return;
+  var idx=0;
+  function loadNext(){
+    if(idx>=files.length){inp.value='';return;}
+    var file=files[idx++];
+    var r1=new FileReader();
+    r1.onload=function(ev){
+      var t=ev.target.result;
+      if(t.indexOf('\ufffd')>=0){
+        var r2=new FileReader();
+        r2.onload=function(ev2){importText(ev2.target.result,file.name);loadNext();};
+        r2.readAsText(file,'Shift_JIS');
+      } else {
+        importText(t,file.name);
+        loadNext();
+      }
+    };
+    r1.readAsText(file,'UTF-8');
+  }
+  loadNext();
 });
 function importText(text,filename){
   if(!text||!text.trim()){alert('ファイルが空です');return;}
