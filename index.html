@@ -235,7 +235,7 @@ async function formatMinutes(){
     var txt=((data.candidates||[])[0]||{content:{parts:[{text:''}]}}).content.parts.filter(function(c){return !c.thought;}).map(function(c){return c.text||'';}).join('');
     txt=txt.replace(/```(?:json)?\s*/g,'').replace(/```/g,'').trim();
     var m=txt.match(/\{[\s\S]*\}/);
-    if(!m)throw new Error('JSON解析エラー');
+    if(!m)throw new Error('JSON解析エラー: '+txt.substring(0,300));
     try{lastData=JSON.parse(m[0]);}catch(e){var m2=txt.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);if(!m2)throw new Error('JSON解析エラー');lastData=JSON.parse(m2[0]);}
     renderMinutes(lastData);
     updateCount++;
