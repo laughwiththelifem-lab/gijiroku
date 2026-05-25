@@ -228,11 +228,12 @@ async function formatMinutes(){
     var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+apiKey,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:1500,temperature:0.3}})
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:8192,temperature:1.0,thinkingConfig:{thinkingBudget:0}}})
     });
     if(!res.ok){var errData=await res.json().catch(function(){return {};});throw new Error('APIエラー: '+res.status+' '+JSON.stringify(errData));}
     var data=await res.json();
     var txt=((data.candidates||[])[0]||{content:{parts:[{text:''}]}}).content.parts.filter(function(c){return !c.thought;}).map(function(c){return c.text||'';}).join('');
+    txt=txt.replace(/```json/g,'').replace(/```/g,'').trim();
     var s=txt.indexOf('{'),e=txt.lastIndexOf('}');
     if(s===-1||e===-1)throw new Error('JSON見つからず: '+txt.substring(0,200));
     try{lastData=JSON.parse(txt.substring(s,e+1));}catch(er){throw new Error('JSON解析失敗: '+txt.substring(s,s+200));}
