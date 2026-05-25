@@ -233,10 +233,9 @@ async function formatMinutes(){
     if(!res.ok){var errData=await res.json().catch(function(){return {};});throw new Error('APIエラー: '+res.status+' '+JSON.stringify(errData));}
     var data=await res.json();
     var txt=((data.candidates||[])[0]||{content:{parts:[{text:''}]}}).content.parts.filter(function(c){return !c.thought;}).map(function(c){return c.text||'';}).join('');
-    txt=txt.replace(/```(?:json)?\s*/g,'').replace(/```/g,'').trim();
-    var m=txt.match(/\{[\s\S]*\}/);
-    if(!m)throw new Error('JSON解析エラー: '+txt.substring(0,300));
-    try{lastData=JSON.parse(m[0]);}catch(e){var m2=txt.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);if(!m2)throw new Error('JSON解析エラー');lastData=JSON.parse(m2[0]);}
+    var s=txt.indexOf('{'),e=txt.lastIndexOf('}');
+    if(s===-1||e===-1)throw new Error('JSON見つからず: '+txt.substring(0,200));
+    try{lastData=JSON.parse(txt.substring(s,e+1));}catch(er){throw new Error('JSON解析失敗: '+txt.substring(s,s+200));}
     renderMinutes(lastData);
     updateCount++;
     document.getElementById('update-badge').textContent=updateCount+'回更新済';
