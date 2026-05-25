@@ -39,6 +39,10 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .tline{font-size:13px;line-height:1.8;padding:3px 0;border-bottom:1px solid #F0F0F0;color:#333}
 .tline:last-child{border-bottom:none}
 .tline.interim{color:#AAA;font-style:italic}
+/* ---- インライン編集 ---- */
+.ed{outline:none;border-radius:3px;transition:background .15s;display:inline}
+.ed:hover{background:rgba(46,117,182,.08);cursor:text}
+.ed:focus{background:rgba(46,117,182,.13);box-shadow:0 0 0 2px rgba(46,117,182,.25)}
 /* ---- 議事録表示 ---- */
 .min-title{font-size:16px;font-weight:700;color:#1A1A2E;margin-bottom:12px;padding:10px 14px;background:#fff;border-left:4px solid #2E75B6;border-radius:0 6px 6px 0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .msec{margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid #E0E0E0;box-shadow:0 1px 4px rgba(0,0,0,.06)}
@@ -68,7 +72,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .action-table{width:100%;border-collapse:collapse;font-size:13px}
 .action-table thead th{background:#FDE8D0;color:#7B3400;padding:7px 10px;text-align:left;border:1px solid #F0C080;font-size:11.5px;font-weight:600}
 .action-table tbody td{padding:7px 10px;border:1px solid #EEE;line-height:1.5;vertical-align:top}
-.action-table .act-who{font-weight:700;color:#1A1A2E;white-space:nowraw;width:90px}
+.action-table .act-who{font-weight:700;color:#1A1A2E;white-space:nowrap;width:90px}
 .action-table .act-when{color:#C55A11;font-weight:700;white-space:nowrap;width:100px}
 .action-table tbody tr:nth-child(even){background:#FFF8F0}
 .action-table tbody tr:hover{background:#FFF3E0}
@@ -198,7 +202,7 @@ function importText(text, filename){
 
 // 録音
 document.getElementById('btn-rec').addEventListener('click',function(){
-  if(!SR){alert('ChromeまたはEdgeをお使いください');return;}
+  if(!SR${alert('ChromeまたはEdgeをお使いください');return;}
   isRec?stopRec():startRec();
 });
 
@@ -258,7 +262,7 @@ function stopRec(){
   document.getElementById('btn-rec').textContent='🎤 録音開始';
   document.getElementById('btn-rec').classList.remove('on');
   document.getElementById('rec-badge').textContent='停止';
-  document.getElementById('st-left').textContent='録音完ĺ�';
+  document.getElementById('st-left').textContent='録音完了';
   stopCD();
   checkBtns();
 }
@@ -299,7 +303,7 @@ async function formatMinutes(){
   if(!apiKey){alert('APIキーを入力してください');return;}
 
   var raw=lines.join('。');
-  var prompt='あなたは会議議事録の整形専門アシスタントです。以下の文字起こしをもとに、JSONのみを出力してください。前置き・説明・コードブロック記号は一切不要です。\n\n文字起こし：'+raw+'\n\nJSON形式：\n{"title":"会議名（不明なら会議）","date":"日時（不明なら空）","place":"場所（不明なら空）","members":"出席者（不明なら空）","goal":"本日のゴール（不明なら空）","agendas":[{"name":"議題名","points":"議論の要点（簡潔に）","decisions":"決定事項（なしれば空）","pending":"保留事項（なければ空）"}],"actions":[{"who":"担当者（不明なら不明）","what":"やること","when":"期限（不明なら不明）"}],"next_meeting":"次回予定（不明なら空）","notes":"特記事項（なしれば空）"}\n\nルール：会話文そのままは禁止。要点を簡潔にまとめる。不明は不明と記載。JSONのみ出力。';
+  var prompt='あなたは会議議事録の整形専門アシスタントです。以下の文字起こしをもとに、JSONのみを出力してください。前置き・説明・コードブロック記号は一切不要です。\n\n文字起こし：'+raw+'\n\nJSON形式：\n{"title":"会議名（不明なら会議）","date":"日時（不明なら空）","place":"場所（不明なら空）","members":"出席者（不明なら空）","goal":"本日のゴール（不明なら空）","agendas":[{"name":"議題名","points":"議論の要点（簡潔に）","decisions":"決定事項（なければ空）","pending":"保留事項（なければ空）"}],"actions":[{"who":"担当者（不明なら不明）","what":"やること","when":"期限（不明なら不明）"}],"next_meeting":"次回予定（不明なら空）","notes":"特記事項（なければ空）"}\n\nルール：会話文そのままは禁止。要点を簡潔にまとめる。不明は不明と記載。JSONのみ出力。';
 
   var minBox=document.getElementById('minutes');
   minBox.innerHTML='<div class="loading"><div class="spin"></div>AIが議事録を整形中...</div>';
@@ -311,7 +315,7 @@ async function formatMinutes(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         contents:[{parts:[{text:prompt}]}],
-        generationConfig:{maxOutputTokens:8192,temperature:1.0,thinkingConfig:{thinkingBudget:0}}
+        generationConfig:{maxOutputTokens;8192,temperature:1.0,thinkingConfig:{thinkingBudget:0}}
       })
     });
     if(!res.ok){var errData=await res.json().catch(function(){return {};});throw new Error('APIエラー: '+res.status+' '+JSON.stringify(errData));}
@@ -334,7 +338,7 @@ function renderMinutes(d){
   var h='';
 
   // タイトル
-  h+='<div class="min-title">📝 '+(d.title||'会議議事録')+'</div>';
+  h+='<div class="min-title">📝 <span class="ed" contenteditable="true" data-field="title">'+(d.title||'会議議事録')+'</span></div>';
 
   // ① 基本情報（テーブル形式）
   h+='<div class="msec">';
@@ -342,11 +346,11 @@ function renderMinutes(d){
   h+='<div class="msec-body" style="padding:0">';
   h+='<table class="info-table">';
   h+='<thead><tr><th style="width:130px">項目</th><th>内容</th></tr></thead><tbody>';
-  var infoRows=[['📅 日時',d.date],['📍 場所',d.place],['👥 出席者',d.members],['🎯 本日のゴール',d.goal]];
+  var infoRows=[['📅 日時',d.date,'date'],['📍 場所',d.place,'place'],['👥 出席者',d.members,'members'],['🎯 本日のゴール',d.goal,'goal']];
   var hasInfo=false;
   infoRows.forEach(function(row){
     if(row[1]){
-      h+='<tr><td class="info-label">'+row[0]+'</td><td>'+esc(row[1])+'</td></tr>';
+      h+='<tr><td class="info-label">'+row[0]+'</td><td class="ed" contenteditable="true" data-field="'+row[2]+'">'+esc(row[1])+'</td></tr>';
       hasInfo=true;
     }
   });
@@ -354,17 +358,17 @@ function renderMinutes(d){
   h+='</tbody></table>';
   h+='</div></div>';
 
-  // ② 議題ごとの要約（カードe��式）
+  // ② 議題ごとの要約（カード形式）
   if(d.agendas&&d.agendas.length>0){
     h+='<div class="msec">';
     h+='<div class="msec-hd green">💬 ② 議題ごとの要約</div>';
     h+='<div class="msec-body">';
-    d.agendas.forEach(function(a){
+    d.agendas.forEach(function(a,i){
       h+='<div class="agenda-item">';
-      h+='<div class="agenda-title">■ '+esc(a.name||'（議題名なし）')+'</div>';
-      if(a.points)h+='<div class="agenda-row pts"><span class="agenda-icon">💡</span><span class="agenda-text"><strong>要点：</strong>'+esc(a.points)+'</span></div>';
-      if(a.decisions)h+='<div class="agenda-row dec"><span class="agenda-icon">✅</span><span class="agenda-text"><strong>決定：</strong>'+esc(a.decisions)+'</span></div>';
-      if(a.pending)h+='<div class="agenda-row pend"><span class="agenda-icon">△</span><span class="agenda-text"><strong>保留：</strong>'+esc(a.pending)+'</span></div>';
+      h+='<div class="agenda-title">■ <span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="name">'+esc(a.name||'議題')+'</span></div>';
+      if(a.points)h+='<div class="agenda-row pts"><span class="agenda-icon">💡</span><span class="agenda-text"><strong>要点：</strong><span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="points">'+esc(a.points)+'</span></span></div>';
+      if(a.decisions)h+='<div class="agenda-row dec"><span class="agenda-icon">✅</span><span class="agenda-text"><strong>決定：</strong><span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="decisions">'+esc(a.decisions)+'</span></span></div>';
+      if(a.pending)h+='<div class="agenda-row pend"><span class="agenda-icon">△</span><span class="agenda-text"><strong>保留：</strong><span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="pending">'+esc(a.pending)+'</span></span></div>';
       h+='</div>';
     });
     h+='</div></div>';
@@ -377,8 +381,8 @@ function renderMinutes(d){
     h+='<div class="msec-body" style="padding:0">';
     h+='<table class="action-table">';
     h+='<thead><tr><th>👤 担当者</th><th>📌 やること</th><th>📅 期限</th></tr></thead><tbody>';
-    d.actions.forEach(function(a){
-      h+='<tr><td class="act-who">'+esc(a.who||'不明')+'</td><td>'+esc(a.what||'')+'</td><td class="act-when">'+esc(a.when||'不明')+'</td></tr>';
+    d.actions.forEach(function(a,j){
+      h+='<tr><td class="act-who ed" contenteditable="true" data-action-idx="'+j+'" data-field="who">'+esc(a.who||'不明')+'</td><td class="ed" contenteditable="true" data-action-idx="'+j+'" data-field="what">'+esc(a.what||'')+'</td><td class="act-when ed" contenteditable="true" data-action-idx="'+j+'" data-field="when">'+esc(a.when||'不明')+'</td></tr>';
     });
     h+='</tbody></table>';
     h+='</div></div>';
@@ -388,8 +392,8 @@ function renderMinutes(d){
   h+='<div class="msec">';
   h+='<div class="msec-hd gray">📌 ④ 全体備考・特記事項</div>';
   h+='<div class="msec-body">';
-  if(d.next_meeting)h+='<div class="note-row"><span>🗓</span><span><strong>次回予定：</strong>'+esc(d.next_meeting)+'</span></div>';
-  if(d.notes)h+='<div class="note-row"><span>📝</span><span><strong>特記：</strong>'+esc(d.notes)+'</span></div>';
+  if(d.next_meeting)h+='<div class="note-row"><span>🗓</span><span><strong>次回予定：</strong><span class="ed" contenteditable="true" data-field="next_meeting">'+esc(d.next_meeting)+'</span></span></div>';
+  if(d.notes)h+='<div class="note-row"><span>📝</span><span><strong>特記：</strong><span class="ed" contenteditable="true" data-field="notes">'+esc(d.notes)+'</span></span></div>';
   if(!d.next_meeting&&!d.notes)h+='<div class="note-row" style="color:#AAA">（なし）</div>';
   h+='<textarea class="note-area" id="note-area" placeholder="補記・追記（Word・PDF出力に反映）"></textarea>';
   h+='</div></div>';
@@ -401,10 +405,32 @@ function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function syncDOMToData(){
+  if(!lastData)return;
+  var d=lastData;
+  ['title','date','place','members','goal','next_meeting','notes'].forEach(function(f){
+    var el=document.querySelector('[data-field="'+f+'"]:not([data-agenda-idx]):not([data-action-idx])');
+    if(el)d[f]=el.textContent.trim();
+  });
+  if(d.agendas)d.agendas.forEach(function(a,i){
+    ['name','points','decisions','pending'].forEach(function(f){
+      var el=document.querySelector('[data-agenda-idx="'+i+'"][data-field="'+f+'"]');
+      if(el)a[f]=el.textContent.trim();
+    });
+  });
+  if(d.actions)d.actions.forEach(function(a,i){
+    ['who','what','when'].forEach(function(f){
+      var el=document.querySelector('[data-action-idx="'+i+'"][data-field="'+f+'"]');
+      if(el)a[f]=el.textContent.trim();
+    });
+  });
+}
+
 // Word出力
 document.getElementById('btn-word').addEventListener('click',function(){
   if(!lastData){alert('先にAI整形してください');return;}
   if(typeof docx==='undefined'){alert('ライブラリ読み込み中です。少し待ってから再度お試しください。');return;}
+  syncDOMToData();
   var D=docx,d=lastData;
   var W=9026;
   var bdr=function(c){return{style:D.BorderStyle.SINGLE,size:4,color:c};};
@@ -461,6 +487,7 @@ document.getElementById('btn-word').addEventListener('click',function(){
 // PDF出力
 document.getElementById('btn-pdf').addEventListener('click',function(){
   if(!lastData){alert('先にAI整形してください');return;}
+  syncDOMToData();
   var d=lastData;
   var noteText=document.getElementById('note-area')?document.getElementById('note-area').value:'';
 
