@@ -262,7 +262,7 @@ function stopRec(){
   document.getElementById('btn-rec').textContent='🎤 録音開始';
   document.getElementById('btn-rec').classList.remove('on');
   document.getElementById('rec-badge').textContent='停止';
-  document.getElementById('st-left').textContent='録音完了';
+  document.getElementById('st-left').textContent='録音完ĺ�';
   stopCD();
   checkBtns();
 }
@@ -468,7 +468,7 @@ document.getElementById('btn-word').addEventListener('click',function(){
   var doc=new D.Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:800,right:850,bottom:800,left:850}}},children:[
     new D.Paragraph(Object.assign(sp(0,80),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'議  事  録',bold:true,size:44,color:'1A1A2E',font:'Arial'})]})),
     new D.Paragraph(Object.assign(sp(0,160),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:d.title||'会議議事録',size:26,color:'2E75B6',font:'Arial'})]})),
-    tbl([hdr('📋 ① 基本情報','2E75B6'),new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg2,children:[new D.Table({width:{size:8626,type:D.WidthType.DXA},columnWidths:[2200,6426],rows:metaRows})]})]})]),
+    tbl([hdr('📋 ① 基本情報','2E75B6'),new D.TableRow({children:[new D.TableCell(width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg2,children:[new D.Table({width:{size:8626,type:D.WidthType.DXA},columnWidths:[2200,6426],rows:metaRows})]})]})]}),
     gap(),
     tbl([hdr('💬 ② 議題ごとの要約','375623'),bodyR(agendaContent)]),
     gap(),
@@ -491,7 +491,7 @@ document.getElementById('btn-pdf').addEventListener('click',function(){
   var d=lastData;
   var noteText=document.getElementById('note-area')?document.getElementById('note-area').value:'';
 
-  var css='*{box-sizing:border-box;margin:0;padding:0;font-family:\'Helvetica Neue\',Arial,\'Hiragino Kaku Gothic ProN\',sans-serif}body{padding:24px;color:#333;font-size:13px}h1{font-size:20px;font-weight:700;color:#1A1A2E;margin-bottom:4px;text-align:center}h2{font-size:14px;color:#2E75B6;text-align:center;margin-bottom:20px}.sec{margin-bottom:18px;border:1px solid #DDD;border-radius:6px;overflow:hidden}.sec-hd{padding:8px 14px;font-size:13px;font-weight:700;color:#fff}.blue{background:#2E75B6}.green{background:#375623}.orange{background:#C55A11}.gray{background:#595959}.sec-body{padding:12px 14px;background:#fff}table{width:100%;border-collapse:collapse}table th{background:#EBF3FB;color:#185FA5;padding:6px 10px;text-align:left;border:1px solid #C7D7E8;font-size:12px}table td{padding:7px 10px;border:1px solid #DDD;vertical-align:top}table .lbl{background:#F0F7FF;font-weight:600;color:#2E75B6;white-space:nowrap;width:130px}.card{border:1px solid #E0E0E0;border-radius:4px;margin-bottom:10px;overflow:hidden}.card-t{background:#E8F5E9;color:#2E7D32;font-weight:700;padding:6px 10px;font-size:13px}.card-r{display:flex;gap:8px;padding:5px 10px;border-bottom:1px solid #F5F5F5}.card-r:last-child{border-bottom:none}.dec{background:#F0FFF4;color:#1B5E20}.pend{background:#FFFDE7;color:#7B5800}.act-who{font-weight:700;color:#1A1A2E;white-space:nowrap;width:90px}.act-when{color:#C55A11;font-weight:700;white-space:nowrap;width:100px}.note-row{display:flex;gap:8px;padding:4px 0}.note-txt{color:#777;font-style:italic;margin-top:6px;padding:6px;border:1px solid #DDD;border-radius:4px}';
+  var css='*{box-sizing:border-box;margin:0;padding:0;font-family:\'Helvetica Neue\',Arial,\'Hiragino Kaku Gothic ProN\',sans-serif}body{padding:24px;color:#333;font-size:13px}h1{font-size:20px;font-weight:700;color:#1A1A2E;margin-bottom:4px;text-align:center}h2{font-size:14px;color:#2E75B6;text-align:center;margin-bottom:20px}.sec{margin-bottom:18px;border:1px solid #DDD;border-radius:6px;overflow:hidden}.sec-hd{padding:8px 14px;font-size:13px;font-weight:700;color:#fff}.blue{background:#2E75B6}.green{background:#375623}.orange{background:#C55A11}.gray{background:#595959}.sec-body{padding:12px 14px;background:#fff}table{width:100%;border-collapse:collapse}table th{background:#EBF3FB;color:#185FA5;padding:6px 10px;text-align:left;border:1px solid #C7D7E8;font-size:12px}table td{padding:7px 10px;border:1px solid #DDD;vertical-align:top}table .lbl{background:#F0F7FF;font-weight:600;color:#2E75B6;white-space:nowrap;width:130px}.card{border:1px solid #E0E0E0;border-radius:4px;margin-bottom:10px;overflow:hidden}.card-t{background:#E8F5E9;color:#2E7D32;font-weight:700;padding:6px 10px;font-size:13px}.card-r{display:flex;gap:8px;padding:5px 10px;border-bottom:1px solid #F5F5F5}.card-r:last-child{border-bottom:none}.dec{background:#F0FFF4;color:#1B5E20}.pend{background:#FFFDE7;color:#7B5800}.act-who{font-weight:700;color:#1A1A2E;width:18%;vertical-align:top}.act-when{color:#C55A11;font-weight:700;text-align:center;width:18%;vertical-align:top}.note-row{display:flex;gap:8px;padding:4px 0}.note-txt{color:#777;font-style:italic;margin-top:6px;padding:6px;border:1px solid #DDD;border-radius:4px}';
 
   var body='<h1>議　事　録</h1><h2>'+(d.title||'会議議事録')+'</h2>';
 
@@ -518,7 +518,7 @@ document.getElementById('btn-pdf').addEventListener('click',function(){
 
   // アクション
   if(d.actions&&d.actions.length>0){
-    body+='<div class="sec"><div class="sec-hd orange">🏃 ③ ネクストアクション</div><div class="sec-body"><table><thead><tr><th>👤 担当者</th><th>📌 やること</th><th>📅 期限</th></tr></thead><tbody>';
+    body+='<div class="sec"><div class="sec-hd orange">🏃 ③ ネクストアクション</div><div class="sec-body"><table style="table-layout:fixed;width:100%"><thead><tr><th style="width:18%">👤 担当者</th><th>📌 やること</th><th style="width:18%;text-align:center">📅 期限</th></tr></thead><tbody>';
     d.actions.forEach(function(a){
       body+='<tr><td class="act-who">'+(a.who||'不明')+'</td><td>'+(a.what||'')+'</td><td class="act-when">'+(a.when||'不明')+'</td></tr>';
     });
