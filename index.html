@@ -311,7 +311,7 @@ async function formatMinutes(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         contents:[{parts:[{text:prompt}]}],
-        generationConfig:{maxOutputTokens;8192,temperature:1.0,thinkingConfig:{thinkingBudget:0}}
+        generationConfig:{maxOutputTokens:8192,temperature:1.0,thinkingConfig:{thinkingBudget:0}}
       })
     });
     if(!res.ok){var errData=await res.json().catch(function(){return {};});throw new Error('APIエラー: '+res.status+' '+JSON.stringify(errData));}
