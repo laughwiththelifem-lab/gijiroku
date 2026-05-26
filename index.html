@@ -70,7 +70,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .agenda-text{flex:1}
 /* アクションテーブル */
 .action-table{width:100%;border-collapse:collapse;font-size:13px}
-.action-table thead th{background:#FDE8D0;color:#7B3400;padding:7px 10px;text-align:left;border:1px solid #F0C080;font-size:11.5px;font-weight:600}
+.action-table thead th{background:#FEA8D0;color:#7B3400;padding:7px 10px;text-align:left;border:1px solid #F0C080;font-size:11.5px;font-weight:600}
 .action-table tbody td{padding:7px 10px;border:1px solid #EEE;line-height:1.5;vertical-align:top}
 .action-table .act-who{font-weight:700;color:#1A1A2E;white-space:nowrap;width:90px}
 .action-table .act-when{color:#C55A11;font-weight:700;white-space:nowrap;width:100px}
@@ -288,6 +288,7 @@ function stopCD(){
 
 function clearAll(){
   lines=[];
+  isFormatting=false;
   document.getElementById('transcript').innerHTML='<div class="ph">録音を開始するか、テキストファイルを読み込むとここに表示されます</div>';
   checkBtns();
 }
@@ -494,7 +495,7 @@ document.getElementById('btn-pdf').addEventListener('click',function(){
   var d=lastData;
   var noteText=document.getElementById('note-area')?document.getElementById('note-area').value:'';
 
-  var css='*{box-sizing:border-box;margin:0;padding:0;font-family:\'Helvetica Neue\',Arial,\'Hiragino Kaku Gothic ProN\',sans-serif}body{padding:24px;color:#333;font-size:13px}h1{font-size:20px;font-weight:700;color:#1A1A2E;margin-bottom:4px;text-align:center}h2{font-size:14px;color:#2E75B6;text-align:center;margin-bottom:20px}.sec{margin-bottom:18px;border:1px solid #DDD;border-radius:6px;overflow:hidden}.sec-hd{padding:8px 14px;font-size:13px;font-weight:700;color:#fff}.blue{background:#2E75B6}.green{background:#375623}.orange{background:#C55A11}.gray{background:#595959}.sec-body{padding:12px 14px;background:#fff}table{width:100%;border-collapse:collapse}table th{background:#EBF3FB;color:#185FA5;padding:6px 10px;text-align:left;border:1px solid #C7D7E8;font-size:12px}table td{padding:7px 10px;border:1px solid #DDD;vertical-align:top}table .lbl{background:#F0F7FF;font-weight:600;color:#2E75B6;white-space:nowrax;width:130px}.card{border:1px solid #E0E0E0;border-radius:4px;margin-bottom:10px;overflow:hidden}.card-t{background:#E8F5E9;color:#2E7D32;font-weight:700;padding:6px 10px;font-size:13px}.card-r{display:flex;gap:8px;padding:5px 10px;border-bottom:1px solid #F5F5F5}.card-r:last-child{border-bottom:none}.dec{background:#F0FFF4;color:#1B5E20}.pend{background:#FFFDE7;color:#7B5800}.act-who{font-weight:700;color:#1A1A2E;width:18%;vertical-align:top}.act-when{color:#C55A11;font-weight:700;text-align:center;width:18%;vertical-align:top}.note-row{display:flex;gap:8px;padding:4px 0}.note-txt{color:#777;font-style:italic;margin-top:6px;padding:6px;border:1px solid #DDD;border-radius:4px}';
+  var css='*{box-sizing:border-box;margin:0;padding:0;font-family:\'Helvetica Neue\',Arial,\'Hiragino Kaku Gothic ProN\',sans-serif}body{padding:24px;color:#333;font-size:13px}h1{font-size:20px;font-weight:700;color:#1A1A2E;margin-bottom:4px;text-align:center}h2{font-size:14px;color:#2E75B6;text-align:center;margin-bottom:20px}.sec{margin-bottom:18px;border:1px solid #DDD;border-radius:6px;overflow:hidden}.sec-hd{padding:8px 14px;font-size:13px;font-weight:700;color:#fff}.blue{background:#2E75B6}.green{background:#375623}.orange{background:#C55A11}.gray{background:#595959}.sec-body{padding:12px 14px;background:#fff}table{width:100%;border-collapse:collapse}table th{background:#EBF3FB;color:#185FA5;padding:6px 10px;text-align:left;border:1px solid #C7D7E8;font-size:12px}table td{padding:7px 10px;border:1px solid #DDD;vertical-align:top}table .lbl{background:#F0F7FF;font-weight:600;color:#2E75B6;white-space:nowrap;width:130px}.card{border:1px solid #E0E0E0;border-radius:4px;margin-bottom:10px;overflow:hidden}.card-t{background:#E8F5E9;color:#2E7D32;font-weight:700;padding:6px 10px;font-size:13px}.card-r{display:flex;gap:8px;padding:5px 10px;border-bottom:1px solid #F5F5F5}.card-r:last-child{border-bottom:none}.dec{background:#F0FFF4;color:#1B5E20}.pend{background:#FFFDE7;color:#7B5800}.act-who{font-weight:700;color:#1A1A2E;width:18%;vertical-align:top}.act-when{color:#C55A11;font-weight:700;text-align:center;width:18%;vertical-align:top}.note-row{display:flex;gap:8px;padding:4px 0}.note-txt{color:#777;font-style:italic;margin-top:6px;padding:6px;border:1px solid #DDD;border-radius:4px}';
 
   var body='<h1>議　事　録</h1><h2>'+(d.title||'会議議事録')+'</h2>';
 
