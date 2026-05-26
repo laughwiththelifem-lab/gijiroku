@@ -444,7 +444,7 @@ document.getElementById('btn-word').addEventListener('click',function(){
   var gap=function(){return new D.Paragraph(Object.assign(sp(60,60),{children:[new D.TextRun({text:'',size:16})]}));};
   var p=function(txt,opts){return new D.Paragraph(Object.assign(sp(0,60),{children:[new D.TextRun(Object.assign({text:txt,size:20,font:'Arial'},opts||{}))]}));};
   var metaRows=[['📅 開催日時',d.date],['📍 開催場所',d.place],['👥 出席者',d.members],['🎯 本日のゴール',d.goal]].filter(function(x){return x[1];}).map(function(x){return new D.TableRow({children:[new D.TableCell({width:{size:2200,type:D.WidthType.DXA},borders:ab('DDDDDD'),shading:{fill:'EBF3FB',type:D.ShadingType.CLEAR},margins:mg,children:[new D.Paragraph({children:[new D.TextRun({text:x[0],bold:true,size:19,color:'185FA5',font:'Arial'})]}),]}),new D.TableCell({width:{size:6826,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg,children:[new D.Paragraph({children:[new D.TextRun({text:x[1]||'　',size:19,font:'Arial'})]})]})]}); });
-  if(!metaRows.length)metaRows=[new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg,children:[p('（基本情報なし）',{color:'AAAAAA'})]})]})];
+  if(!metaRows.length)metaRows=[new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg,children:[p('（基本情報なし）',{color:&AAAAAA'})]})]})];
   var agendaContent=[];
   (d.agendas||[]).forEach(function(a){
     agendaContent.push(new D.Paragraph(Object.assign(sp(0,40),{children:[new D.TextRun({text:'■ '+(a.name||''),bold:true,size:20,font:'Arial'})]})));
@@ -464,11 +464,11 @@ document.getElementById('btn-word').addEventListener('click',function(){
   if(d.next_meeting)noteContent.push(p('🗓 次回予定：'+d.next_meeting));
   if(d.notes)noteContent.push(p('📝 特記事項：'+d.notes));
   if(noteText)noteContent.push(p('補記：'+noteText));
-  if(!noteContent.length)noteContent.push(p('（なし）',{color:'AAAAAA'}));
+  if(!noteContent.length)noteContent.push(p('（なし）',{color:&AAAAAA'}));
   var doc=new D.Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:800,right:850,bottom:800,left:850}}},children:[
-    new D.Paragraph(Object.assign(sp(0,80),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'議  事  録',bold:true,size:44,color:'1A1A2E',font:'Arial'})]})),
+    new D.Paragraph(Object.assign(sp(0,80),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'議  事  録7,bold:true,size:44,color:'1A1A2E',font:'Arial'})]})),
     new D.Paragraph(Object.assign(sp(0,160),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:d.title||'会議議事録',size:26,color:'2E75B6',font:'Arial'})]})),
-    tbl([hdr('📋 ① 基本情報','2E75B6'),new D.TableRow({children:[new D.TableCell(width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg2,children:[new D.Table({width:{size:8626,type:D.WidthType.DXA},columnWidths:[2200,6426],rows:metaRows})]})]})]}),
+    tbl([hdr('📋 ① 基本情報','2E75B6'),new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg2,children:[new D.Table({width:{size:8626,type:D.WidthType.DXA},columnWidths:[2200,6426],rows:metaRows})]})]})]),
     gap(),
     tbl([hdr('💬 ② 議題ごとの要約','375623'),bodyR(agendaContent)]),
     gap(),
