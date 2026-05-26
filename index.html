@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>gijiroku - AIè­°äºé²ã¢ããª</title>
+<title>gijiroku - AI議事録アプリ</title>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -39,11 +39,11 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .tline{font-size:13px;line-height:1.8;padding:3px 0;border-bottom:1px solid #F0F0F0;color:#333}
 .tline:last-child{border-bottom:none}
 .tline.interim{color:#AAA;font-style:italic}
-/* ---- ã¤ã³ã©ã¤ã³ç·¨é ---- */
+/* ---- インライン編集 ---- */
 .ed{outline:none;border-radius:3px;transition:background .15s;display:inline}
 .ed:hover{background:rgba(46,117,182,.08);cursor:text}
 .ed:focus{background:rgba(46,117,182,.13);box-shadow:0 0 0 2px rgba(46,117,182,.25)}
-/* ---- è­°äºé²è¡¨ç¤º ---- */
+/* ---- 議事録表示 ---- */
 .min-title{font-size:16px;font-weight:700;color:#1A1A2E;margin-bottom:12px;padding:10px 14px;background:#fff;border-left:4px solid #2E75B6;border-radius:0 6px 6px 0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .msec{margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid #E0E0E0;box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .msec-hd{padding:9px 14px;font-size:13px;font-weight:700;color:#fff;letter-spacing:.3px}
@@ -52,12 +52,12 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .msec-hd.orange{background:linear-gradient(90deg,#B04A00,#C55A11)}
 .msec-hd.gray{background:linear-gradient(90deg,#444,#595959)}
 .msec-body{padding:12px 14px;background:#fff;font-size:13px;line-height:1.8}
-/* åºæ¬æå ±ãã¼ãã« */
+/* 基本情報テーブル */
 .info-table{width:100%;border-collapse:collapse;font-size:13px}
 .info-table thead th{background:#EBF3FB;color:#185FA5;font-size:11.5px;padding:6px 10px;text-align:left;border:1px solid #C7D7E8;font-weight:600}
 .info-table tbody td{padding:8px 10px;border:1px solid #D5E3F0;line-height:1.6;vertical-align:top}
 .info-table .info-label{background:#F0F7FF;font-weight:600;color:#2E75B6;white-space:nowrap;width:130px}
-/* è­°é¡ã«ã¼ã */
+/* 議題カード */
 .agenda-item{border:1px solid #E0E0E0;border-radius:6px;margin-bottom:10px;overflow:hidden}
 .agenda-item:last-child{margin-bottom:0}
 .agenda-title{background:#E8F5E9;color:#2E7D32;font-weight:700;padding:7px 12px;font-size:13px;border-bottom:1px solid #C8E6C9}
@@ -68,7 +68,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .agenda-row.pts{background:#FAFAFA}
 .agenda-icon{flex-shrink:0;width:20px;text-align:center}
 .agenda-text{flex:1}
-/* ã¢ã¯ã·ã§ã³ãã¼ãã« */
+/* アクションテーブル */
 .action-table{width:100%;border-collapse:collapse;font-size:13px}
 .action-table thead th{background:#FDE8D0;color:#7B3400;padding:7px 10px;text-align:left;border:1px solid #F0C080;font-size:11.5px;font-weight:600}
 .action-table tbody td{padding:7px 10px;border:1px solid #EEE;line-height:1.5;vertical-align:top}
@@ -76,7 +76,7 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 .action-table .act-when{color:#C55A11;font-weight:700;white-space:nowrap;width:100px}
 .action-table tbody tr:nth-child(even){background:#FFF8F0}
 .action-table tbody tr:hover{background:#FFF3E0}
-/* åè */
+/* 備考 */
 .note-row{display:flex;gap:6px;padding:4px 0;font-size:13px;line-height:1.65}
 .note-area{width:100%;min-height:50px;font-size:13px;padding:8px;border:1px solid #DDD;border-radius:6px;font-family:inherit;resize:vertical;margin-top:8px}
 .loading{display:flex;align-items:center;gap:8px;color:#2E75B6;font-size:13px;padding:20px 0}
@@ -89,60 +89,60 @@ body{font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;b
 <body>
 
 <div class="topbar">
-  <div class="logo">gijiroku<span>AIè­°äºé²</span></div>
+  <div class="logo">gijiroku<span>AI議事録</span></div>
   <div class="topbar-right">
     <span class="btn btn-interval">
-      ð<select id="sel-interval"><option value="60">1å</option><option value="120">2å</option><option value="300">5å</option></select>
+      🔄<select id="sel-interval"><option value="60">1分</option><option value="120">2分</option><option value="300">5分</option></select>
     </span>
-    <label class="btn btn-file" for="file-input">ð ãã¡ã¤ã«èª­è¾¼</label>
+    <label class="btn btn-file" for="file-input">📂 ファイル読込</label>
     <input type="file" id="file-input" accept=".txt" multiple style="display:none">
-    <button class="btn btn-ai" id="btn-ai" disabled>â¨ AIæ´å½¢</button>
-    <button class="btn btn-rec" id="btn-rec">ð¤ é²é³éå§</button>
-    <button class="btn btn-word" id="btn-word" disabled>ð Wordåºå</button>
-    <button class="btn btn-pdf" id="btn-pdf" disabled>ð¨ PDFåºå</button>
+    <button class="btn btn-ai" id="btn-ai" disabled>✨ AI整形</button>
+    <button class="btn btn-rec" id="btn-rec">🎤 録音開始</button>
+    <button class="btn btn-word" id="btn-word" disabled>📄 Word出力</button>
+    <button class="btn btn-pdf" id="btn-pdf" disabled>🖨 PDF出力</button>
   </div>
 </div>
 
 <div class="api-bar">
-  <span>ð Gemini APIã­ã¼ï¼</span>
-  <input type="password" id="api-key" placeholder="AIza... ãå¥åããã¨AIæ´å½¢ãä½¿ãã¾ãï¼ç¡æï¼">
-  <span>åå¾ï¼<a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a></span>
+  <span>🔑 Gemini APIキー：</span>
+  <input type="password" id="api-key" placeholder="AIza... を入力するとAI整形が使えます（無料）">
+  <span>取得：<a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a></span>
 </div>
 
 <div class="main">
   <div class="panel">
     <div class="panel-hd">
-      <div class="panel-title">ð æå­èµ·ããï¼å±¥æ­´ï¼</div>
+      <div class="panel-title">🎙 文字起こし（履歴）</div>
       <div>
-        <span class="badge" id="rec-badge">å¾æ©ä¸­</span>
-        <button class="btn-clear" onclick="clearAll()">ã¯ãªã¢</button>
+        <span class="badge" id="rec-badge">待機中</span>
+        <button class="btn-clear" onclick="clearAll()">クリア</button>
       </div>
     </div>
     <div class="panel-body" id="transcript">
-      <div class="ph">é²é³ãéå§ãããããã­ã¹ããã¡ã¤ã«ãèª­ã¿è¾¼ãã¨ããã«è¡¨ç¤ºããã¾ã</div>
+      <div class="ph">録音を開始するか、テキストファイルを読み込むとここに表示されます</div>
     </div>
   </div>
   <div class="panel">
     <div class="panel-hd">
-      <div class="panel-title">ð ææ°ã®å¨ä½è­°äºé²</div>
-      <span class="badge" id="update-badge">0åæ´æ°æ¸</span>
+      <div class="panel-title">📋 最新の全体議事録</div>
+      <span class="badge" id="update-badge">0回更新済</span>
     </div>
     <div class="panel-body" id="minutes">
-      <div class="ph">é²é³ã¾ãã¯åãè¾¼ã¿å¾ããAIæ´å½¢ããã¿ã³ãæ¼ãã¨è­°äºé²ãçæããã¾ã</div>
+      <div class="ph">録音または取り込み後、「AI整形」ボタンを押すと議事録が生成されます</div>
     </div>
   </div>
 </div>
 
 <div class="statusbar">
-  <span id="st-left">å¾æ©ä¸­</span>
-  <span id="st-right">èªåæ´æ°ã¾ã§ï¼--:--</span>
+  <span id="st-left">待機中</span>
+  <span id="st-right">自動更新まで：--:--</span>
 </div>
 
 <script>
 var lines=[], isRec=false, recog=null, updateCount=0, cdTimer=null, cdSec=0, lastData=null, isFormatting=false;
 var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 
-// APIã­ã¼å¥å
+// APIキー入力
 document.getElementById('api-key').addEventListener('input',function(){
   checkBtns();
 });
@@ -154,7 +154,7 @@ function checkBtns(){
   document.getElementById('btn-pdf').disabled=!lastData;
 }
 
-// ãã¡ã¤ã«é¸æï¼è¤æ°å¯¾å¿ï¼
+// ファイル選択（複数対応）
 document.getElementById('file-input').addEventListener('change',function(e){
   var files=Array.from(e.target.files);
   var inp=this;
@@ -166,7 +166,7 @@ document.getElementById('file-input').addEventListener('change',function(e){
     var r1=new FileReader();
     r1.onload=function(ev){
       var t=ev.target.result;
-      if(t.indexOf('ï¿½')>=0){
+      if(t.indexOf('�')>=0){
         var r2=new FileReader();
         r2.onload=function(ev2){importText(ev2.target.result,file.name);loadNext();};
         r2.readAsText(file,'Shift_JIS');
@@ -182,12 +182,12 @@ document.getElementById('file-input').addEventListener('change',function(e){
 
 function importText(text, filename){
   if(!text||!text.trim()){
-    alert(filename+' ã¯ç©ºã§ã');
+    alert(filename+' は空です');
     return;
   }
   var box=document.getElementById('transcript');
   if(box.querySelector('.ph'))box.innerHTML='';
-  var sents=text.split(/[\nã]+/).map(function(s){return s.trim();}).filter(function(s){return s.length>0;});
+  var sents=text.split(/[\n。]+/).map(function(s){return s.trim();}).filter(function(s){return s.length>0;});
   sents.forEach(function(s){
     lines.push(s);
     var d=document.createElement('div');
@@ -196,13 +196,13 @@ function importText(text, filename){
     box.appendChild(d);
   });
   box.scrollTop=box.scrollHeight;
-  document.getElementById('st-left').textContent=filename+' ('+sents.length+'è¡) ãåãè¾¼ã¿ã¾ãã';
+  document.getElementById('st-left').textContent=filename+' ('+sents.length+'行) を取り込みました';
   checkBtns();
 }
 
-// é²é³
+// 録音
 document.getElementById('btn-rec').addEventListener('click',function(){
-  if(!SR){alert('Chromeã¾ãã¯Edgeããä½¿ããã ãã');return;}
+  if(!SR){alert('ChromeまたはEdgeをお使いください');return;}
   isRec?stopRec():startRec();
 });
 
@@ -215,10 +215,10 @@ function startRec(){
 
   recog.onstart=function(){
     isRec=true;
-    document.getElementById('btn-rec').textContent='â¹ é²é³åæ­¢';
+    document.getElementById('btn-rec').textContent='⏹ 録音停止';
     document.getElementById('btn-rec').classList.add('on');
-    document.getElementById('rec-badge').textContent='ð´ é²é³ä¸­';
-    document.getElementById('st-left').textContent='é²é³ä¸­...';
+    document.getElementById('rec-badge').textContent='🔴 録音中';
+    document.getElementById('st-left').textContent='録音中...';
     var box=document.getElementById('transcript');
     if(box.querySelector('.ph'))box.innerHTML='';
     startCD();
@@ -239,16 +239,16 @@ function startRec(){
     }
     if(interim){
       if(!iDiv){iDiv=document.createElement('div');iDiv.className='tline interim';box.appendChild(iDiv);}
-      iDiv.textContent=interim+'â¦';box.scrollTop=box.scrollHeight;
+      iDiv.textContent=interim+'…';box.scrollTop=box.scrollHeight;
     }
   };
 
   recog.onerror=function(e){
     if(e.error==='not-allowed'){
-      alert('ãã¤ã¯ã¸ã®ã¢ã¯ã»ã¹ãæå¦ããã¾ããããã©ã¦ã¶ã®ã¢ãã¬ã¹ãã¼å·¦ã®ã¢ã¤ã³ã³ãããã¤ã¯ãè¨±å¯ãã¦ãã ããã');
+      alert('マイクへのアクセスが拒否されました。ブラウザのアドレスバー左のアイコンからマイクを許可してください。');
       stopRec();
     } else if(e.error!=='no-speech'){
-      document.getElementById('st-left').textContent='ã¨ã©ã¼: '+e.error;
+      document.getElementById('st-left').textContent='エラー: '+e.error;
       stopRec();
     }
   };
@@ -259,10 +259,10 @@ function startRec(){
 function stopRec(){
   isRec=false;
   if(recog)recog.stop();
-  document.getElementById('btn-rec').textContent='ð¤ é²é³éå§';
+  document.getElementById('btn-rec').textContent='🎤 録音開始';
   document.getElementById('btn-rec').classList.remove('on');
-  document.getElementById('rec-badge').textContent='åæ­¢';
-  document.getElementById('st-left').textContent='é²é³å®äº';
+  document.getElementById('rec-badge').textContent='停止';
+  document.getElementById('st-left').textContent='録音完了';
   stopCD();
   checkBtns();
 }
@@ -273,7 +273,7 @@ function startCD(){
   cdTimer=setInterval(function(){
     cdSec--;
     var m=Math.floor(cdSec/60),s=cdSec%60;
-    document.getElementById('st-right').textContent='èªåæ´æ°ã¾ã§ï¼'+('0'+m).slice(-2)+':'+('0'+s).slice(-2);
+    document.getElementById('st-right').textContent='自動更新まで：'+('0'+m).slice(-2)+':'+('0'+s).slice(-2);
     if(cdSec<=0){
       if(document.getElementById('api-key').value.trim().length>10&&lines.length>0)formatMinutes();
       cdSec=parseInt(document.getElementById('sel-interval').value);
@@ -283,16 +283,16 @@ function startCD(){
 
 function stopCD(){
   if(cdTimer){clearInterval(cdTimer);cdTimer=null;}
-  document.getElementById('st-right').textContent='èªåæ´æ°ã¾ã§ï¼--:--';
+  document.getElementById('st-right').textContent='自動更新まで：--:--';
 }
 
 function clearAll(){
   lines=[];
-  document.getElementById('transcript').innerHTML='<div class="ph">é²é³ãéå§ãããããã­ã¹ããã¡ã¤ã«ãèª­ã¿è¾¼ãã¨ããã«è¡¨ç¤ºããã¾ã</div>';
+  document.getElementById('transcript').innerHTML='<div class="ph">録音を開始するか、テキストファイルを読み込むとここに表示されます</div>';
   checkBtns();
 }
 
-// AIæ´å½¢
+// AI整形
 document.getElementById('btn-ai').addEventListener('click',function(){
   formatMinutes();
 });
@@ -301,14 +301,14 @@ async function formatMinutes(){
   if(lines.length===0)return;
   if(isFormatting)return;
   var apiKey=document.getElementById('api-key').value.trim();
-  if(!apiKey){alert('APIã­ã¼ãå¥åãã¦ãã ãã');return;}
+  if(!apiKey){alert('APIキーを入力してください');return;}
 
-  var raw=lines.join('ã');
-  var prompt='ããªãã¯ä¼è­°è­°äºé²ã®æ´å½¢å°éã¢ã·ã¹ã¿ã³ãã§ããä»¥ä¸ã®æå­èµ·ããããã¨ã«ãJSONã®ã¿ãåºåãã¦ãã ãããåç½®ãã»èª¬æã»ã³ã¼ããã­ãã¯è¨å·ã¯ä¸åä¸è¦ã§ãã\n\næå­èµ·ããï¼'+raw+'\n\nJSONå½¢å¼ï¼\n{"title":"ä¼è­°åï¼ä¸æãªãä¼è­°ï¼","date":"æ¥æï¼ä¸æãªãç©ºï¼","place":"å ´æï¼ä¸æãªãç©ºï¼","members":"åºå¸­èï¼ä¸æãªãç©ºï¼","goal":"æ¬æ¥ã®ã´ã¼ã«ï¼ä¸æãªãç©ºï¼","agendas":[{"name":"è­°é¡å","points":"è­°è«ã®è¦ç¹ï¼ç°¡æ½ã«ï¼","decisions":"æ±ºå®äºé ï¼ãªããã°ç©ºï¼","pending":"ä¿çäºé ï¼ãªããã°ç©ºï¼"}],"actions":[{"who":"æå½èï¼ä¸æãªãä¸æï¼","what":"ãããã¨","when":"æéï¼ä¸æãªãä¸æï¼"}],"next_meeting":"æ¬¡åäºå®ï¼ä¸æãªãç©ºï¼","notes":"ç¹è¨äºé ï¼ãªããã°ç©ºï¼"}\n\nã«ã¼ã«ï¼ä¼è©±æãã®ã¾ã¾ã¯ç¦æ­¢ãè¦ç¹ãç°¡æ½ã«ã¾ã¨ãããä¸æã¯ä¸æã¨è¨è¼ãJSONã®ã¿åºåã';
+  var raw=lines.join('。');
+  var prompt='あなたは会議議事録の整形専門アシスタントです。以下の文字起こしをもとに、JSONのみを出力してください。前置き・説明・コードブロック記号は一切不要です。\n\n文字起こし：'+raw+'\n\nJSON形式：\n{"title":"会議名（不明なら会議）","date":"日時（不明なら空）","place":"場所（不明なら空）","members":"出席者（不明なら空）","goal":"本日のゴール（不明なら空）","agendas":[{"name":"議題名","points":"議論の要点（簡潔に）","decisions":"決定事項（なければ空）","pending":"保留事項（なければ空）"}],"actions":[{"who":"担当者（不明なら不明）","what":"やること","when":"期限（不明なら不明）"}],"next_meeting":"次回予定（不明なら空）","notes":"特記事項（なければ空）"}\n\nルール：会話文そのままは禁止。要点を簡潔にまとめる。不明は不明と記載。JSONのみ出力。';
 
   isFormatting=true;
   var minBox=document.getElementById('minutes');
-  minBox.innerHTML='<div class="loading"><div class="spin"></div>AIãè­°äºé²ãæ´å½¢ä¸­...</div>';
+  minBox.innerHTML='<div class="loading"><div class="spin"></div>AIが議事録を整形中...</div>';
   checkBtns();
 
   try{
@@ -320,18 +320,18 @@ async function formatMinutes(){
         generationConfig:{maxOutputTokens:8192,temperature:1.0,thinkingConfig:{thinkingBudget:0}}
       })
     });
-    if(!res.ok){var errData=await res.json().catch(function(){return {};});throw new Error('APIã¨ã©ã¼: '+res.status+' '+JSON.stringify(errData));}
+    if(!res.ok){var errData=await res.json().catch(function(){return {};});throw new Error('APIエラー: '+res.status+' '+JSON.stringify(errData));}
     var data=await res.json();
     var txt=((data.candidates||[])[0]||{content:{parts:[{text:''}]}}).content.parts.filter(function(c){return !c.thought;}).map(function(c){return c.text||'';}).join('');
     txt=txt.replace(/```json/g,'').replace(/```/g,'').trim();
     var s=txt.indexOf('{'),e=txt.lastIndexOf('}');
-    if(s===-1||e===-1)throw new Error('JSONè¦ã¤ããã: '+txt.substring(0,200));
-    try{lastData=JSON.parse(txt.substring(s,e+1));}catch(er){throw new Error('JSONè§£æå¤±æ: '+txt.substring(s,s+200));}
+    if(s===-1||e===-1)throw new Error('JSON見つからず: '+txt.substring(0,200));
+    try{lastData=JSON.parse(txt.substring(s,e+1));}catch(er){throw new Error('JSON解析失敗: '+txt.substring(s,s+200));}
     renderMinutes(lastData);
     updateCount++;
-    document.getElementById('update-badge').textContent=updateCount+'åæ´æ°æ¸';
+    document.getElementById('update-badge').textContent=updateCount+'回更新済';
   }catch(e){
-    minBox.innerHTML='<div class="ph" style="color:#E74C3C">æ´å½¢ã«å¤±æãã¾ããã<br><small>'+e.message+'</small></div>';
+    minBox.innerHTML='<div class="ph" style="color:#E74C3C">整形に失敗しました。<br><small>'+e.message+'</small></div>';
   }
   isFormatting=false;
   checkBtns();
@@ -340,16 +340,16 @@ async function formatMinutes(){
 function renderMinutes(d){
   var h='';
 
-  // ã¿ã¤ãã«
-  h+='<div class="min-title">ð <span class="ed" contenteditable="true" data-field="title">'+(d.title||'ä¼è­°è­°äºé²')+'</span></div>';
+  // タイトル
+  h+='<div class="min-title">📝 <span class="ed" contenteditable="true" data-field="title">'+(d.title||'会議議事録')+'</span></div>';
 
-  // â  åºæ¬æå ±ï¼ãã¼ãã«å½¢å¼ï¼
+  // ① 基本情報（テーブル形式）
   h+='<div class="msec">';
-  h+='<div class="msec-hd blue">ð â  åºæ¬æå ±</div>';
+  h+='<div class="msec-hd blue">📋 ① 基本情報</div>';
   h+='<div class="msec-body" style="padding:0">';
   h+='<table class="info-table">';
-  h+='<thead><tr><th style="width:130px">é ç®</th><th>åå®¹</th></tr></thead><tbody>';
-  var infoRows=[['ð æ¥æ',d.date,'date'],['ð å ´æ',d.place,'place'],['ð¥ åºå¸­è',d.members,'members'],['ð¯ æ¬æ¥ã®ã´ã¼ã«',d.goal,'goal']];
+  h+='<thead><tr><th style="width:130px">項目</th><th>内容</th></tr></thead><tbody>';
+  var infoRows=[['📅 日時',d.date,'date'],['📍 場所',d.place,'place'],['👥 出席者',d.members,'members'],['🎯 本日のゴール',d.goal,'goal']];
   var hasInfo=false;
   infoRows.forEach(function(row){
     if(row[1]){
@@ -357,48 +357,48 @@ function renderMinutes(d){
       hasInfo=true;
     }
   });
-  if(!hasInfo)h+='<tr><td colspan="2" style="color:#AAA;text-align:center;padding:12px">ï¼åºæ¬æå ±ãªãï¼</td></tr>';
+  if(!hasInfo)h+='<tr><td colspan="2" style="color:#AAA;text-align:center;padding:12px">（基本情報なし）</td></tr>';
   h+='</tbody></table>';
   h+='</div></div>';
 
-  // â¡ è­°é¡ãã¨ã®è¦ç´ï¼ã«ã¼ãå½¢å¼ï¼
+  // ② 議題ごとの要約（カード形式）
   if(d.agendas&&d.agendas.length>0){
     h+='<div class="msec">';
-    h+='<div class="msec-hd green">ð¬ â¡ è­°é¡ãã¨ã®è¦ç´</div>';
+    h+='<div class="msec-hd green">💬 ② 議題ごとの要約</div>';
     h+='<div class="msec-body">';
     d.agendas.forEach(function(a,i){
       h+='<div class="agenda-item">';
-      h+='<div class="agenda-title">â  <span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="name">'+esc(a.name||'è­°é¡')+'</span></div>';
-      if(a.points)h+='<div class="agenda-row pts"><span class="agenda-icon">ð¡</span><span class="agenda-text"><strong>è¦ç¹ï¼</strong><span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="points">'+esc(a.points)+'</span></span></div>';
-      if(a.decisions)h+='<div class="agenda-row dec"><span class="agenda-icon">â</span><span class="agenda-text"><strong>æ±ºå®ï¼</strong><span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="decisions">'+esc(a.decisions)+'</span></span></div>';
-      if(a.pending)h+='<div class="agenda-row pend"><span class="agenda-icon">â³</span><span class="agenda-text"><strong>ä¿çï¼</strong><span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="pending">'+esc(a.pending)+'</span></span></div>';
+      h+='<div class="agenda-title">■ <span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="name">'+esc(a.name||'議題')+'</span></div>';
+      if(a.points)h+='<div class="agenda-row pts"><span class="agenda-icon">💡</span><span class="agenda-text"><strong>要点：</strong><span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="points">'+esc(a.points)+'</span></span></div>';
+      if(a.decisions)h+='<div class="agenda-row dec"><span class="agenda-icon">✅</span><span class="agenda-text"><strong>決定：</strong><span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="decisions">'+esc(a.decisions)+'</span></span></div>';
+      if(a.pending)h+='<div class="agenda-row pend"><span class="agenda-icon">△</span><span class="agenda-text"><strong>保留：</strong><span class="ed" contenteditable="true" data-agenda-idx="'+i+'" data-field="pending">'+esc(a.pending)+'</span></span></div>';
       h+='</div>';
     });
     h+='</div></div>';
   }
 
-  // â¢ ãã¯ã¹ãã¢ã¯ã·ã§ã³ï¼ãã¼ãã«å½¢å¼ï¼
+  // ③ ネクストアクション（テーブル形式）
   if(d.actions&&d.actions.length>0){
     h+='<div class="msec">';
-    h+='<div class="msec-hd orange">ð â¢ ãã¯ã¹ãã¢ã¯ã·ã§ã³</div>';
+    h+='<div class="msec-hd orange">🏃 ③ ネクストアクション</div>';
     h+='<div class="msec-body" style="padding:0">';
     h+='<table class="action-table">';
-    h+='<thead><tr><th>ð¤ æå½è</th><th>ð ãããã¨</th><th>ð æé</th></tr></thead><tbody>';
+    h+='<thead><tr><th>👤 担当者</th><th>📌 やること</th><th>📅 期限</th></tr></thead><tbody>';
     d.actions.forEach(function(a,j){
-      h+='<tr><td class="act-who ed" contenteditable="true" data-action-idx="'+j+'" data-field="who">'+esc(a.who||'ä¸æ')+'</td><td class="ed" contenteditable="true" data-action-idx="'+j+'" data-field="what">'+esc(a.what||'')+'</td><td class="act-when ed" contenteditable="true" data-action-idx="'+j+'" data-field="when">'+esc(a.when||'ä¸æ')+'</td></tr>';
+      h+='<tr><td class="act-who ed" contenteditable="true" data-action-idx="'+j+'" data-field="who">'+esc(a.who||'不明')+'</td><td class="ed" contenteditable="true" data-action-idx="'+j+'" data-field="what">'+esc(a.what||'')+'</td><td class="act-when ed" contenteditable="true" data-action-idx="'+j+'" data-field="when">'+esc(a.when||'不明')+'</td></tr>';
     });
     h+='</tbody></table>';
     h+='</div></div>';
   }
 
-  // â£ å¨ä½åèã»ç¹è¨äºé 
+  // ④ 全体備考・特記事項
   h+='<div class="msec">';
-  h+='<div class="msec-hd gray">ð â£ å¨ä½åèã»ç¹è¨äºé </div>';
+  h+='<div class="msec-hd gray">📌 ④ 全体備考・特記事項</div>';
   h+='<div class="msec-body">';
-  if(d.next_meeting)h+='<div class="note-row"><span>ð</span><span><strong>æ¬¡åäºå®ï¼</strong><span class="ed" contenteditable="true" data-field="next_meeting">'+esc(d.next_meeting)+'</span></span></div>';
-  if(d.notes)h+='<div class="note-row"><span>ð</span><span><strong>ç¹è¨ï¼</strong><span class="ed" contenteditable="true" data-field="notes">'+esc(d.notes)+'</span></span></div>';
-  if(!d.next_meeting&&!d.notes)h+='<div class="note-row" style="color:#AAA">ï¼ãªãï¼</div>';
-  h+='<textarea class="note-area" id="note-area" placeholder="è£è¨ã»è¿½è¨ï¼Wordã»PDFåºåã«åæ ï¼"></textarea>';
+  if(d.next_meeting)h+='<div class="note-row"><span>🗓</span><span><strong>次回予定：</strong><span class="ed" contenteditable="true" data-field="next_meeting">'+esc(d.next_meeting)+'</span></span></div>';
+  if(d.notes)h+='<div class="note-row"><span>📝</span><span><strong>特記：</strong><span class="ed" contenteditable="true" data-field="notes">'+esc(d.notes)+'</span></span></div>';
+  if(!d.next_meeting&&!d.notes)h+='<div class="note-row" style="color:#AAA">（なし）</div>';
+  h+='<textarea class="note-area" id="note-area" placeholder="補記・追記（Word・PDF出力に反映）"></textarea>';
   h+='</div></div>';
 
   document.getElementById('minutes').innerHTML=h;
@@ -429,10 +429,10 @@ function syncDOMToData(){
   });
 }
 
-// Wordåºå
+// Word出力
 document.getElementById('btn-word').addEventListener('click',function(){
-  if(!lastData){alert('åã«AIæ´å½¢ãã¦ãã ãã');return;}
-  if(typeof docx==='undefined'){alert('ã©ã¤ãã©ãªèª­ã¿è¾¼ã¿ä¸­ã§ããå°ãå¾ã£ã¦ããååº¦ãè©¦ããã ããã');return;}
+  if(!lastData){alert('先にAI整形してください');return;}
+  if(typeof docx==='undefined'){alert('ライブラリ読み込み中です。少し待ってから再度お試しください。');return;}
   syncDOMToData();
   var D=docx,d=lastData;
   var W=9026;
@@ -446,98 +446,98 @@ document.getElementById('btn-word').addEventListener('click',function(){
   var tbl=function(rows){return new D.Table({width:{size:W,type:D.WidthType.DXA},columnWidths:[W],rows:rows});};
   var gap=function(){return new D.Paragraph(Object.assign(sp(60,60),{children:[new D.TextRun({text:'',size:16})]}));};
   var p=function(txt,opts){return new D.Paragraph(Object.assign(sp(0,60),{children:[new D.TextRun(Object.assign({text:txt,size:20,font:'Arial'},opts||{}))]}));};
-  var metaRows=[['ð éå¬æ¥æ',d.date],['ð éå¬å ´æ',d.place],['ð¥ åºå¸­è',d.members],['ð¯ æ¬æ¥ã®ã´ã¼ã«',d.goal]].filter(function(x){return x[1];}).map(function(x){return new D.TableRow({children:[new D.TableCell({width:{size:2200,type:D.WidthType.DXA},borders:ab('DDDDDD'),shading:{fill:'EBF3FB',type:D.ShadingType.CLEAR},margins:mg,children:[new D.Paragraph({children:[new D.TextRun({text:x[0],bold:true,size:19,color:'185FA5',font:'Arial'})]}),]}),new D.TableCell({width:{size:6826,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg,children:[new D.Paragraph({children:[new D.TextRun({text:x[1]||'ã',size:19,font:'Arial'})]})]})]}); });
-  if(!metaRows.length)metaRows=[new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg,children:[p('ï¼åºæ¬æå ±ãªãï¼',{color:'AAAAAA'})]})]})];
+  var metaRows=[['📅 開催日時',d.date],['📍 開催場所',d.place],['👥 出席者',d.members],['🎯 本日のゴール',d.goal]].filter(function(x){return x[1];}).map(function(x){return new D.TableRow({children:[new D.TableCell({width:{size:2200,type:D.WidthType.DXA},borders:ab('DDDDDD'),shading:{fill:'EBF3FB',type:D.ShadingType.CLEAR},margins:mg,children:[new D.Paragraph({children:[new D.TextRun({text:x[0],bold:true,size:19,color:'185FA5',font:'Arial'})]}),]}),new D.TableCell({width:{size:6826,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg,children:[new D.Paragraph({children:[new D.TextRun({text:x[1]||'　',size:19,font:'Arial'})]})]})]}); });
+  if(!metaRows.length)metaRows=[new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg,children:[p('（基本情報なし）',{color:'AAAAAA'})]})]})];
   var agendaContent=[];
   (d.agendas||[]).forEach(function(a){
-    agendaContent.push(new D.Paragraph(Object.assign(sp(0,40),{children:[new D.TextRun({text:'â  '+(a.name||''),bold:true,size:20,font:'Arial'})]})));
-    if(a.points)agendaContent.push(p('ð¡ è¦ç¹ï¼'+a.points));
-    if(a.decisions)agendaContent.push(new D.Paragraph(Object.assign(sp(0,40),{children:[new D.TextRun({text:'â æ±ºå®ï¼'+a.decisions,bold:true,size:20,color:'375623',font:'Arial'})]})));
-    if(a.pending)agendaContent.push(p('â³ ä¿çï¼'+a.pending));
+    agendaContent.push(new D.Paragraph(Object.assign(sp(0,40),{children:[new D.TextRun({text:'■ '+(a.name||''),bold:true,size:20,font:'Arial'})]})));
+    if(a.points)agendaContent.push(p('💡 要点：'+a.points));
+    if(a.decisions)agendaContent.push(new D.Paragraph(Object.assign(sp(0,40),{children:[new D.TextRun({text:'✅ 決定：'+a.decisions,bold:true,size:20,color:'375623',font:'Arial'})]})));
+    if(a.pending)agendaContent.push(p('△ 保留：'+a.pending));
     agendaContent.push(p(''));
   });
-  if(!agendaContent.length)agendaContent.push(p('ï¼ãªãï¼',{color:'AAAAAA'}));
+  if(!agendaContent.length)agendaContent.push(p('（なし）',{color:'AAAAAA'}));
   var actionContent=[];
   (d.actions||[]).forEach(function(a){
-    actionContent.push(new D.Paragraph(Object.assign(sp(0,80),{children:[new D.TextRun({text:'ð¤ '+(a.who||'ä¸æ'),bold:true,size:20,font:'Arial'}),new D.TextRun({text:'  â¶  '+(a.what||'')+'  ï¼  ',size:20,font:'Arial'}),new D.TextRun({text:'ð '+(a.when||'ä¸æ'),bold:true,size:20,color:'843C0C',font:'Arial'})]})));
+    actionContent.push(new D.Paragraph(Object.assign(sp(0,80),{children:[new D.TextRun({text:'👤 '+(a.who||'不明'),bold:true,size:20,font:'Arial'}),new D.TextRun({text:'  ▶  '+(a.what||'')+'  ／  ',size:20,font:'Arial'}),new D.TextRun({text:'📅 '+(a.when||'不明'),bold:true,size:20,color:'843C0C',font:'Arial'})]})));
   });
-  if(!actionContent.length)actionContent.push(p('ï¼ãªãï¼',{color:'AAAAAA'}));
+  if(!actionContent.length)actionContent.push(p('（なし）',{color:'AAAAAA'}));
   var noteText=document.getElementById('note-area')?document.getElementById('note-area').value:'';
   var noteContent=[];
-  if(d.next_meeting)noteContent.push(p('ð æ¬¡åäºå®ï¼'+d.next_meeting));
-  if(d.notes)noteContent.push(p('ð ç¹è¨äºé ï¼'+d.notes));
-  if(noteText)noteContent.push(p('è£è¨ï¼'+noteText));
-  if(!noteContent.length)noteContent.push(p('ï¼ãªãï¼',{color:'AAAAAA'}));
+  if(d.next_meeting)noteContent.push(p('🗓 次回予定：'+d.next_meeting));
+  if(d.notes)noteContent.push(p('📝 特記事項：'+d.notes));
+  if(noteText)noteContent.push(p('補記：'+noteText));
+  if(!noteContent.length)noteContent.push(p('（なし）',{color:'AAAAAA'}));
   var doc=new D.Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:800,right:850,bottom:800,left:850}}},children:[
-    new D.Paragraph(Object.assign(sp(0,80),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'è­°  äº  é²',bold:true,size:44,color:'1A1A2E',font:'Arial'})]})),
-    new D.Paragraph(Object.assign(sp(0,160),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:d.title||'ä¼è­°è­°äºé²',size:26,color:'2E75B6',font:'Arial'})]})),
-    tbl([hdr('ð â  åºæ¬æå ±','2E75B6'),new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg2,children:[new D.Table({width:{size:8626,type:D.WidthType.DXA},columnWidths:[2200,6426],rows:metaRows})]})]})]),
+    new D.Paragraph(Object.assign(sp(0,80),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:'議  事  録',bold:true,size:44,color:'1A1A2E',font:'Arial'})]})),
+    new D.Paragraph(Object.assign(sp(0,160),{alignment:D.AlignmentType.CENTER,children:[new D.TextRun({text:d.title||'会議議事録',size:26,color:'2E75B6',font:'Arial'})]})),
+    tbl([hdr('📋 ① 基本情報','2E75B6'),new D.TableRow({children:[new D.TableCell({width:{size:W,type:D.WidthType.DXA},borders:ab('DDDDDD'),margins:mg2,children:[new D.Table({width:{size:8626,type:D.WidthType.DXA},columnWidths:[2200,6426],rows:metaRows})]})]})]),
     gap(),
-    tbl([hdr('ð¬ â¡ è­°é¡ãã¨ã®è¦ç´','375623'),bodyR(agendaContent)]),
+    tbl([hdr('💬 ② 議題ごとの要約','375623'),bodyR(agendaContent)]),
     gap(),
-    tbl([hdr('ð â¢ ãã¯ã¹ãã¢ã¯ã·ã§ã³ï¼èª°ãã»ä½ãã»ãã¤ã¾ã§ã«ï¼','C55A11'),bodyR(actionContent)]),
+    tbl([hdr('🏃 ③ ネクストアクション（誰が・何を・いつまでに）','C55A11'),bodyR(actionContent)]),
     gap(),
-    tbl([hdr('ð â£ å¨ä½åèã»ç¹è¨äºé ','595959'),bodyR(noteContent)]),
+    tbl([hdr('📌 ④ 全体備考・特記事項','595959'),bodyR(noteContent)]),
   ]}]});
   D.Packer.toBlob(doc).then(function(blob){
     var a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    a.download=(d.title||'è­°äºé²')+'_è­°äºé².docx';
+    a.download=(d.title||'議事録')+'_議事録.docx';
     a.click();
   });
 });
 
-// PDFåºå
+// PDF出力
 document.getElementById('btn-pdf').addEventListener('click',function(){
-  if(!lastData){alert('åã«AIæ´å½¢ãã¦ãã ãã');return;}
+  if(!lastData){alert('先にAI整形してください');return;}
   syncDOMToData();
   var d=lastData;
   var noteText=document.getElementById('note-area')?document.getElementById('note-area').value:'';
 
   var css='*{box-sizing:border-box;margin:0;padding:0;font-family:\'Helvetica Neue\',Arial,\'Hiragino Kaku Gothic ProN\',sans-serif}body{padding:24px;color:#333;font-size:13px}h1{font-size:20px;font-weight:700;color:#1A1A2E;margin-bottom:4px;text-align:center}h2{font-size:14px;color:#2E75B6;text-align:center;margin-bottom:20px}.sec{margin-bottom:18px;border:1px solid #DDD;border-radius:6px;overflow:hidden}.sec-hd{padding:8px 14px;font-size:13px;font-weight:700;color:#fff}.blue{background:#2E75B6}.green{background:#375623}.orange{background:#C55A11}.gray{background:#595959}.sec-body{padding:12px 14px;background:#fff}table{width:100%;border-collapse:collapse}table th{background:#EBF3FB;color:#185FA5;padding:6px 10px;text-align:left;border:1px solid #C7D7E8;font-size:12px}table td{padding:7px 10px;border:1px solid #DDD;vertical-align:top}table .lbl{background:#F0F7FF;font-weight:600;color:#2E75B6;white-space:nowrax;width:130px}.card{border:1px solid #E0E0E0;border-radius:4px;margin-bottom:10px;overflow:hidden}.card-t{background:#E8F5E9;color:#2E7D32;font-weight:700;padding:6px 10px;font-size:13px}.card-r{display:flex;gap:8px;padding:5px 10px;border-bottom:1px solid #F5F5F5}.card-r:last-child{border-bottom:none}.dec{background:#F0FFF4;color:#1B5E20}.pend{background:#FFFDE7;color:#7B5800}.act-who{font-weight:700;color:#1A1A2E;width:18%;vertical-align:top}.act-when{color:#C55A11;font-weight:700;text-align:center;width:18%;vertical-align:top}.note-row{display:flex;gap:8px;padding:4px 0}.note-txt{color:#777;font-style:italic;margin-top:6px;padding:6px;border:1px solid #DDD;border-radius:4px}';
 
-  var body='<h1>è­°ãäºãé²</h1><h2>'+(d.title||'ä¼è­°è­°äºé²')+'</h2>';
+  var body='<h1>議　事　録</h1><h2>'+(d.title||'会議議事録')+'</h2>';
 
-  // åºæ¬æå ±
-  body+='<div class="sec"><div class="sec-hd blue">ð â  åºæ¬æå ±</div><div class="sec-body"><table><thead><tr><th style="width:130px">é ç®</th><th>åå®¹</th></tr></thead><tbody>';
-  var infos=[['ð æ¥æ',d.date],['ð å ´æ',d.place],['ð¥ åºå¸­è',d.members],['ð¯ æ¬æ¥ã®ã´ã¼ã«',d.goal]];
+  // 基本情報
+  body+='<div class="sec"><div class="sec-hd blue">📋 ① 基本情報</div><div class="sec-body"><table><thead><tr><th style="width:130px">項目</th><th>内容</th></tr></thead><tbody>';
+  var infos=[['📅 日時',d.date],['📍 場所',d.place],['👥 出席者',d.members],['🎯 本日のゴール',d.goal]];
   var any=false;
   infos.forEach(function(r){if(r[1]){body+='<tr><td class="lbl">'+r[0]+'</td><td>'+r[1]+'</td></tr>';any=true;}});
-  if(!any)body+='<tr><td colspan="2" style="color:#AAA;text-align:center">ï¼æå ±ãªãï¼</td></tr>';
+  if(!any)body+='<tr><td colspan="2" style="color:#AAA;text-align:center">（情報なし）</td></tr>';
   body+='</tbody></table></div></div>';
 
-  // è­°é¡
+  // 議題
   if(d.agendas&&d.agendas.length>0){
-    body+='<div class="sec"><div class="sec-hd green">ð¬ â¡ è­°é¡ãã¨ã®è¦ç´</div><div class="sec-body">';
+    body+='<div class="sec"><div class="sec-hd green">💬 ② 議題ごとの要約</div><div class="sec-body">';
     d.agendas.forEach(function(a){
-      body+='<div class="card"><div class="card-t">â  '+(a.name||'')+'</div>';
-      if(a.points)body+='<div class="card-r"><span>ð¡</span><span><strong>è¦ç¹ï¼</strong>'+a.points+'</span></div>';
-      if(a.decisions)body+='<div class="card-r dec"><span>â</span><span><strong>æ±ºå®ï¼</strong>'+a.decisions+'</span></div>';
-      if(a.pending)body+='<div class="card-r pend"><span>â³</span><span><strong>ä¿çï¼</strong>'+a.pending+'</span></div>';
+      body+='<div class="card"><div class="card-t">■ '+(a.name||'')+'</div>';
+      if(a.points)body+='<div class="card-r"><span>💡</span><span><strong>要点：</strong>'+a.points+'</span></div>';
+      if(a.decisions)body+='<div class="card-r dec"><span>✅</span><span><strong>決定：</strong>'+a.decisions+'</span></div>';
+      if(a.pending)body+='<div class="card-r pend"><span>△</span><span><strong>保留：</strong>'+a.pending+'</span></div>';
       body+='</div>';
     });
     body+='</div></div>';
   }
 
-  // ã¢ã¯ã·ã§ã³
+  // アクション
   if(d.actions&&d.actions.length>0){
-    body+='<div class="sec"><div class="sec-hd orange">ð â¢ ãã¯ã¹ãã¢ã¯ã·ã§ã³</div><div class="sec-body"><table style="table-layout:fixed;width:100%"><thead><tr><th style="width:18%">ð¤ æå½è</th><th>ð ãããã¨</th><th style="width:18%;text-align:center">ð æé</th></tr></thead><tbody>';
+    body+='<div class="sec"><div class="sec-hd orange">🏃 ③ ネクストアクション</div><div class="sec-body"><table style="table-layout:fixed;width:100%"><thead><tr><th style="width:18%">👤 担当者</th><th>📌 やること</th><th style="width:18%;text-align:center">📅 期限</th></tr></thead><tbody>';
     d.actions.forEach(function(a){
-      body+='<tr><td class="act-who">'+(a.who||'ä¸æ')+'</td><td>'+(a.what||'')+'</td><td class="act-when">'+(a.when||'ä¸æ')+'</td></tr>';
+      body+='<tr><td class="act-who">'+(a.who||'不明')+'</td><td>'+(a.what||'')+'</td><td class="act-when">'+(a.when||'不明')+'</td></tr>';
     });
     body+='</tbody></table></div></div>';
   }
 
-  // åè
-  body+='<div class="sec"><div class="sec-hd gray">ð â£ å¨ä½åèã»ç¹è¨äºé </div><div class="sec-body">';
-  if(d.next_meeting)body+='<div class="note-row"><span>ð</span><span><strong>æ¬¡åäºå®ï¼</strong>'+d.next_meeting+'</span></div>';
-  if(d.notes)body+='<div class="note-row"><span>ð</span><span><strong>ç¹è¨ï¼</strong>'+d.notes+'</span></div>';
-  if(!d.next_meeting&&!d.notes&&!noteText)body+='<div style="color:#AAA">ï¼ãªãï¼</div>';
-  if(noteText)body+='<div class="note-txt">è£è¨ï¼'+noteText+'</div>';
+  // 備考
+  body+='<div class="sec"><div class="sec-hd gray">📌 ④ 全体備考・特記事項</div><div class="sec-body">';
+  if(d.next_meeting)body+='<div class="note-row"><span>🗓</span><span><strong>次回予定：</strong>'+d.next_meeting+'</span></div>';
+  if(d.notes)body+='<div class="note-row"><span>📝</span><span><strong>特記：</strong>'+d.notes+'</span></div>';
+  if(!d.next_meeting&&!d.notes&&!noteText)body+='<div style="color:#AAA">（なし）</div>';
+  if(noteText)body+='<div class="note-txt">補記：'+noteText+'</div>';
   body+='</div></div>';
 
   var win=window.open('','_blank','width=900,height=700');
-  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+(d.title||'è­°äºé²')+'_è­°äºé²</title><style>'+css+'</style></head><body>'+body+'<script>window.onload=function(){window.print();}<\/script></body></html>');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+(d.title||'議事録')+'_議事録</title><style>'+css+'</style></head><body>'+body+'<script>window.onload=function(){window.print();}<\/script></body></html>');
   win.document.close();
 });
 </script>
